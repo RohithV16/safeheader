@@ -1,0 +1,91 @@
+{
+  "type": "object",
+  "properties": {
+    "enforceScopeForSensitive": {
+      "type": "boolean",
+      "title": "Enforce Strict Scope Guard for sensitive headers and cookies"
+    },
+    "enforceMaskSecrets": {
+      "type": "boolean",
+      "title": "Enforce secret value masking in extension UI"
+    },
+    "maxAutoPauseMinutes": {
+      "type": "integer",
+      "title": "Maximum allowed idle auto-pause timeout in minutes (1-1440)"
+    },
+    "managedProfiles": {
+      "type": "array",
+      "title": "Admin-seeded read-only profiles",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "shortTitle": { "type": "string" },
+          "color": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "hideComment": { "type": "boolean" },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "name": { "type": "string" },
+                "value": { "type": "string" },
+                "operation": { "type": "string" },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "respHeaders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "name": { "type": "string" },
+                "value": { "type": "string" },
+                "operation": { "type": "string" },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "cookies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "name": { "type": "string" },
+                "value": { "type": "string" },
+                "mode": { "type": "string" },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "urlFilters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "matchType": { "type": "string" },
+                "pattern": { "type": "string" },
+                "exclude": { "type": "boolean" },
+                "comment": { "type": "string" }
+              }
+            }
+          },
+          "resourceTypes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "requestMethods": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

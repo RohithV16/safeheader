@@ -1,0 +1,30 @@
+{
+  "name": "safeheader",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SafeHeader — local-only, security-hardened Chrome MV3 extension for modifying HTTP request/response headers, cookies, query parameters, and redirects.",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "package": "npm run build && node scripts/package-extension.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "echo-server": "node scripts/echo-server.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.511.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.320",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.3"
+  }
+}
