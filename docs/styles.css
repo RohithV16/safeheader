@@ -1,25 +1,24 @@
 /* ===================================================================
-   SafeHeader Documentation — Clean, Elegant Developer Theme
-   Focused on: Overview, Installation, and Usage
+   SafeHeader Documentation — Clean Dark Developer Theme
+   Zero-Blue Palette: Neutral Carbon, Zinc, and Emerald Green
    =================================================================== */
 
 :root {
-  --bg-base: #070a14;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --bg-surface-hover: #27354f;
-  --border-color: #24324f;
+  --bg-base: #09090b;
+  --bg-surface: #121215;
+  --bg-surface-elevated: #1a1a20;
+  --bg-surface-hover: #22222a;
+  --border-color: #272730;
   --border-subtle: rgba(255, 255, 255, 0.08);
 
-  --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
-  --text-faint: #94a3b8;
+  --text-main: #f4f4f5;
+  --text-muted: #d4d4d8;
+  --text-faint: #a1a1aa;
 
-  --accent-cyan: #38bdf8;
-  --accent-cyan-glow: rgba(56, 189, 248, 0.2);
-  --accent-indigo: #818cf8;
-  --accent-emerald: #34d399;
-  --accent-emerald-glow: rgba(52, 211, 153, 0.15);
+  --accent-green: #10b981;
+  --accent-green-light: #34d399;
+  --accent-green-dark: #059669;
+  --accent-green-glow: rgba(16, 185, 129, 0.18);
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -27,7 +26,7 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.6);
   --max-width: 1080px;
 }
 
@@ -66,7 +65,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(7, 10, 20, 0.9);
+  background-color: rgba(9, 9, 11, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
@@ -93,12 +92,13 @@ body {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+  background: linear-gradient(135deg, var(--accent-green-light) 0%, var(--accent-green-dark) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #09090b;
   font-weight: 800;
+  box-shadow: 0 0 12px var(--accent-green-glow);
 }
 
 .brand-tag {
@@ -106,9 +106,9 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.15rem 0.5rem;
-  background-color: rgba(56, 189, 248, 0.12);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background-color: var(--accent-green-glow);
+  color: var(--accent-green-light);
+  border: 1px solid rgba(16, 185, 129, 0.35);
   border-radius: 9999px;
   font-weight: 600;
 }
@@ -155,15 +155,16 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
-  color: white;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%);
+  color: #09090b;
+  font-weight: 700;
+  box-shadow: 0 4px 14px var(--accent-green-glow);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #0369a1 0%, #4338ca 100%);
+  background: linear-gradient(135deg, var(--accent-green-light) 0%, var(--accent-green) 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .btn-secondary {
@@ -174,7 +175,7 @@ body {
 
 .btn-secondary:hover {
   background-color: var(--bg-surface-hover);
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-green);
   transform: translateY(-1px);
 }
 
@@ -193,12 +194,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.9rem;
-  background-color: rgba(56, 189, 248, 0.08);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.35rem 0.95rem;
+  background-color: var(--accent-green-glow);
+  border: 1px solid rgba(16, 185, 129, 0.35);
   border-radius: 9999px;
   font-size: 0.825rem;
-  color: var(--accent-cyan);
+  color: var(--accent-green-light);
   font-weight: 600;
   margin-bottom: 1.5rem;
 }
@@ -215,7 +216,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #ffffff 20%, #38bdf8 70%, #818cf8 100%);
+  background: linear-gradient(135deg, #ffffff 30%, #34d399 75%, #10b981 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -250,9 +251,9 @@ body {
 }
 
 .badge-emerald {
-  color: var(--accent-emerald);
-  border-color: rgba(52, 211, 153, 0.35);
-  background-color: var(--accent-emerald-glow);
+  color: var(--accent-green-light);
+  border-color: rgba(16, 185, 129, 0.4);
+  background-color: var(--accent-green-glow);
 }
 
 .hero-cta {
@@ -282,7 +283,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent-cyan);
+  color: var(--accent-green);
   margin-bottom: 0.5rem;
 }
 
@@ -299,12 +300,12 @@ body {
   line-height: 1.6;
 }
 
-/* Screenshot Display Frames (Rock Solid Rendering) */
+/* Screenshot Display Frames */
 .screenshot-frame {
   width: 100%;
   max-width: 960px;
   margin: 2rem auto;
-  background-color: #0b1120;
+  background-color: #121215;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -313,7 +314,7 @@ body {
 
 .screenshot-header {
   height: 2.5rem;
-  background-color: #080d1a;
+  background-color: #0c0c0e;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -328,7 +329,7 @@ body {
 }
 .window-dot.red { background-color: #ef4444; }
 .window-dot.yellow { background-color: #f59e0b; }
-.window-dot.green { background-color: #10b981; }
+.window-dot.green { background-color: var(--accent-green); }
 
 .screenshot-title {
   margin-left: 0.75rem;
@@ -411,8 +412,8 @@ body {
 
 .tab-btn.active {
   background-color: var(--bg-surface-elevated);
-  color: var(--accent-cyan);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: var(--accent-green-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .tab-panel {
@@ -435,8 +436,8 @@ body {
   justify-content: space-between;
   gap: 1.25rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
   border-radius: var(--radius-md);
   margin-bottom: 2rem;
 }
@@ -469,8 +470,8 @@ body {
   height: 32px;
   border-radius: 50%;
   background-color: var(--bg-surface-elevated);
-  border: 1.5px solid var(--accent-cyan);
-  color: var(--accent-cyan);
+  border: 1.5px solid var(--accent-green);
+  color: var(--accent-green-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -499,7 +500,7 @@ body {
   background-color: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: var(--accent-cyan);
+  color: var(--accent-green-light);
 }
 
 /* Usage Step Walkthrough */
@@ -521,7 +522,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--accent-cyan);
+  color: var(--accent-green);
   margin-bottom: 0.4rem;
 }
 
@@ -565,13 +566,13 @@ body {
 }
 
 .code-box {
-  background-color: #050811;
+  background-color: #0c0c0e;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.85rem;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  color: #e2e8f0;
+  color: #f4f4f5;
   overflow-x: auto;
 }
 
@@ -583,7 +584,7 @@ body {
 /* Footer */
 .footer {
   border-top: 1px solid var(--border-subtle);
-  background-color: #040711;
+  background-color: #070709;
   padding: 3.5rem 0 2.5rem;
   color: var(--text-muted);
   font-size: 0.9rem;
