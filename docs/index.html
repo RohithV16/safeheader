@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SafeHeader — Local-Only, Zero-Export HTTP Header & Traffic Engine</title>
-  <meta name="description" content="A hardened, 100% local Chrome & Firefox Manifest V3 extension to modify HTTP headers, request cookies, query parameters, and redirects with zero data export.">
+  <title>SafeHeader — The 100% Local, Zero-Export HTTP Header &amp; Traffic Engine</title>
+  <meta name="description" content="A hardened, 100% local Chrome &amp; Firefox Manifest V3 extension to modify HTTP headers, request cookies, query parameters, and redirects with zero data export.">
   
   <!-- Open Graph -->
-  <meta property="og:title" content="SafeHeader — Local-Only HTTP Header Engine">
-  <meta property="og:description" content="100% local, zero-export, security-hardened HTTP header & traffic modification for Chrome and Firefox.">
+  <meta property="og:title" content="SafeHeader — Local-Only HTTP Header &amp; Traffic Engine">
+  <meta property="og:description" content="100% local, zero-export, security-hardened HTTP header &amp; traffic modification for Chrome and Firefox.">
   <meta property="og:type" content="website">
   
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" type="image/png" href="assets/extension.png">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 </head>
 <body>
 
-  <!-- Background decorative glow -->
+  <!-- Reading Progress Bar -->
+  <div id="scrollProgressBar" class="scroll-progress-bar"></div>
+
+  <!-- Background Decorative Mesh & Lights -->
   <div class="bg-glow-wrapper" aria-hidden="true">
+    <div class="bg-grid-overlay"></div>
     <div class="bg-glow-1"></div>
     <div class="bg-glow-2"></div>
   </div>
@@ -26,37 +30,80 @@
   <header class="navbar">
     <div class="container nav-container">
       <a href="#overview" class="brand">
-        <div class="brand-icon">SH</div>
+        <div class="brand-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
         <span>SafeHeader</span>
         <span class="brand-tag">v0.1.3</span>
       </a>
 
+      <!-- Global Search Command Trigger -->
+      <button id="cmdTrigger" class="nav-search-trigger" aria-label="Open documentation search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search documentation...</span>
+        <span class="search-kbd">⌘K</span>
+      </button>
+
       <nav>
         <ul class="nav-links">
           <li><a href="#overview" class="nav-link">Overview</a></li>
-          <li><a href="#install" class="nav-link">Download & Install</a></li>
-          <li><a href="#properties" class="nav-link">Properties & Rules</a></li>
-          <li><a href="#security" class="nav-link">Security & Audit</a></li>
-          <li><a href="#cookbook" class="nav-link">Recipes</a></li>
-          <li><a href="#gallery" class="nav-link">Screenshots</a></li>
+          <li><a href="#architecture" class="nav-link">Architecture</a></li>
+          <li><a href="#install" class="nav-link">Install</a></li>
+          <li><a href="#properties" class="nav-link">Properties</a></li>
+          <li><a href="#sandbox" class="nav-link">Sandbox</a></li>
+          <li><a href="#comparison" class="nav-link">Compare</a></li>
+          <li><a href="#security" class="nav-link">Security</a></li>
+          <li><a href="#cookbook" class="nav-link">Cookbook</a></li>
+          <li><a href="#faq" class="nav-link">FAQ</a></li>
+          <li><a href="#gallery" class="nav-link">Gallery</a></li>
         </ul>
       </nav>
 
       <div class="nav-actions">
-        <a href="#install" class="btn btn-primary btn-sm">Get SafeHeader</a>
+        <a href="#install" class="btn btn-primary btn-sm">Get Extension</a>
         <a href="https://github.com/RohithV16/safeheader" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
         </a>
+        <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Toggle navigation menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Drawer Overlay -->
+  <div id="mobileDrawer" class="mobile-drawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <div class="brand-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span>SafeHeader</span>
+      </div>
+      <button id="mobileDrawerClose" class="mobile-nav-toggle" aria-label="Close navigation menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <ul class="mobile-drawer-links">
+      <li><a href="#overview" class="mobile-drawer-link">Overview</a></li>
+      <li><a href="#architecture" class="mobile-drawer-link">DNR Architecture</a></li>
+      <li><a href="#install" class="mobile-drawer-link">Download &amp; Install</a></li>
+      <li><a href="#properties" class="mobile-drawer-link">Properties &amp; Rules</a></li>
+      <li><a href="#sandbox" class="mobile-drawer-link">Filter Sandbox</a></li>
+      <li><a href="#comparison" class="mobile-drawer-link">Comparison Matrix</a></li>
+      <li><a href="#security" class="mobile-drawer-link">Enterprise Security</a></li>
+      <li><a href="#cookbook" class="mobile-drawer-link">Cookbook Recipes</a></li>
+      <li><a href="#faq" class="mobile-drawer-link">Technical FAQs</a></li>
+      <li><a href="#gallery" class="mobile-drawer-link">Screenshots</a></li>
+    </ul>
+  </div>
 
   <!-- Hero Section -->
   <section id="overview" class="hero-section">
     <div class="container">
       <div class="hero-pill">
-        <span class="hero-pill-dot"></span>
+        <span class="hero-pill-pulse"></span>
         <span>Corporate Security Edition &bull; Chrome &amp; Firefox MV3</span>
       </div>
 
@@ -65,7 +112,7 @@
       </h1>
 
       <p class="hero-desc">
-        A security-hardened browser extension built for development, QA, and security engineering. Modify HTTP request/response headers, cookies, query parameters, and redirects with declarative rules and zero network telemetry.
+        A security-hardened browser extension built for engineering, QA, and SecOps. Modify HTTP request/response headers, cookies, query parameters, and redirects with declarative rules and zero network telemetry.
       </p>
 
       <div class="hero-badges">
@@ -73,31 +120,133 @@
         <span class="badge badge-cyan">✓ Zero Outbound Telemetry</span>
         <span class="badge badge-indigo">✓ Strict Scope Guard</span>
         <span class="badge">✓ Native declarativeNetRequest</span>
-        <span class="badge">✓ Multi-Profile Mode</span>
+        <span class="badge">✓ Multi-Profile Engine</span>
         <span class="badge">✓ Audit Log Ring Buffer</span>
       </div>
 
       <div class="hero-cta">
         <a href="#install" class="btn btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download Extension
+          Download Extension (v0.1.3)
         </a>
-        <a href="#properties" class="btn btn-secondary">
-          Explore All Properties &rarr;
+        <a href="#architecture" class="btn btn-secondary">
+          Explore Architecture &rarr;
         </a>
       </div>
 
-      <!-- Hero Browser Mockup -->
-      <div class="mockup-frame" data-lightbox="assets/extension.png" data-caption="SafeHeader Main Extension Interface">
-        <div class="mockup-header">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot yellow"></div>
-          <div class="mockup-dot green"></div>
-          <div class="mockup-address-bar">chrome-extension://safeheader/sidepanel.html</div>
+      <!-- 3D Interactive Hero Mockup Frame -->
+      <div class="hero-mockup-wrapper">
+        <div class="mockup-floating-badge mockup-badge-top-left">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Strict Scope Guard: Enforced</span>
         </div>
-        <div class="mockup-content">
-          <img src="assets/extension.png" alt="SafeHeader Extension Main Workspace" class="mockup-img" loading="eager">
+        <div class="mockup-floating-badge mockup-badge-bottom-right">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span>Outbound Telemetry: 0.0 KB (connect-src 'none')</span>
         </div>
+
+        <div class="mockup-frame" data-lightbox="assets/extension.png" data-caption="SafeHeader Main Extension Workspace — Profile Rail, Active Badge Chips, and Master Controls">
+          <div class="mockup-header">
+            <div class="mockup-dot red"></div>
+            <div class="mockup-dot yellow"></div>
+            <div class="mockup-dot green"></div>
+            <div class="mockup-address-bar">chrome-extension://safeheader/sidepanel.html</div>
+          </div>
+          <div class="mockup-content">
+            <img src="assets/extension.png" alt="SafeHeader Extension Main Workspace" class="mockup-img" loading="eager">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Deep Dive Section -->
+  <section id="architecture" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Under the Hood</span>
+        <h2 class="section-title">DeclarativeNetRequest Architecture <a href="#architecture" class="header-permalink" aria-label="Permalink">#</a></h2>
+        <p class="section-desc">
+          How SafeHeader intercepts, validates, and modifies HTTP traffic inside Chromium and Gecko network stacks with zero background JavaScript latency.
+        </p>
+      </div>
+
+      <!-- Architecture SVG Diagram Showcase -->
+      <div style="margin-bottom: 3.5rem;" data-lightbox="assets/architecture-diagram.svg" data-caption="SafeHeader DeclarativeNetRequest Architecture &amp; Compilation Pipeline">
+        <img src="assets/architecture-diagram.svg" alt="SafeHeader Architecture Diagram" style="width: 100%; border-radius: var(--radius-xl); box-shadow: var(--shadow-card); cursor: zoom-in; display: block;" loading="lazy">
+      </div>
+
+      <!-- Architecture Bento Grid -->
+      <div class="bento-grid">
+        
+        <!-- Dynamic vs Session Rules -->
+        <div class="bento-card bento-col-6">
+          <div class="prop-header">
+            <h3 class="prop-title">Dynamic Rules vs. Session Rules</h3>
+            <span class="prop-tag security">Kernel</span>
+          </div>
+          <p class="prop-desc">
+            SafeHeader partitions rules intelligently between persistent dynamic DNR and ephemeral in-memory session DNR to ensure maximum performance and zero credential leakage.
+          </p>
+          <div class="prop-specs">
+            <div class="spec-row"><span class="spec-label">Persistent Profiles</span><span class="spec-value">chrome.declarativeNetRequest.updateDynamicRules</span></div>
+            <div class="spec-row"><span class="spec-label">Tab Lock &amp; Ephemeral</span><span class="spec-value">chrome.declarativeNetRequest.updateSessionRules</span></div>
+            <div class="spec-row"><span class="spec-label">Session Durability</span><span class="spec-value">Wiped on browser restart (zero disk leak)</span></div>
+            <div class="spec-row"><span class="spec-label">Rule Priority Scale</span><span class="spec-value">Priority 1 (Standard) to 100 (Overrides)</span></div>
+          </div>
+        </div>
+
+        <!-- Rule Quotas & Limits -->
+        <div class="bento-card bento-col-6">
+          <div class="prop-header">
+            <h3 class="prop-title">Browser Engine Rule Quotas</h3>
+            <span class="prop-tag filters">Limits</span>
+          </div>
+          <p class="prop-desc">
+            Chromium and Firefox enforce strict kernel quotas on Declarative Net Rules. SafeHeader actively balances rule IDs and monitors engine capacity with automated diagnostics.
+          </p>
+          <div class="prop-specs">
+            <div class="spec-row"><span class="spec-label">Dynamic Rules Cap</span><span class="spec-value">30,000 maximum rules</span></div>
+            <div class="spec-row"><span class="spec-label">Session Rules Cap</span><span class="spec-value">5,000 maximum rules</span></div>
+            <div class="spec-row"><span class="spec-label">RE2 Regex Rules Cap</span><span class="spec-value">1,000 max regex rules per browser</span></div>
+            <div class="spec-row"><span class="spec-label">ID Allocation</span><span class="spec-value">Deterministic rule ID compaction</span></div>
+          </div>
+        </div>
+
+        <!-- Appendable Request Headers Allowlist -->
+        <div class="bento-card bento-col-6">
+          <div class="prop-header">
+            <h3 class="prop-title">Appendable Headers Allowlist</h3>
+            <span class="prop-tag headers">DNR Specs</span>
+          </div>
+          <p class="prop-desc">
+            Per Chromium's DeclarativeNetRequest specification, the <code class="code-inline">append</code> operation is strictly permitted only on 15 specific headers. SafeHeader compiles other operations to <code class="code-inline">set</code> or <code class="code-inline">remove</code> to prevent runtime rejections.
+          </p>
+          <div class="prop-specs">
+            <div class="spec-row"><span class="spec-label">Allowlist</span><span class="spec-value">Accept, Cookie, User-Agent, Forwarded</span></div>
+            <div class="spec-row"><span class="spec-label">Security Headers</span><span class="spec-value">X-Forwarded-For, Sec-CH-UA</span></div>
+            <div class="spec-row"><span class="spec-label">Custom Headers</span><span class="spec-value">Compiled via 'set' or 'remove'</span></div>
+            <div class="spec-row"><span class="spec-label">Compliance</span><span class="spec-value">100% compliant with W3C WebExtensions</span></div>
+          </div>
+        </div>
+
+        <!-- Restricted Headers -->
+        <div class="bento-card bento-col-6">
+          <div class="prop-header">
+            <h3 class="prop-title">Restricted / Forbidden Headers</h3>
+            <span class="prop-tag redirects">Network</span>
+          </div>
+          <p class="prop-desc">
+            Headers managed exclusively by the browser networking layer (<code class="code-inline">Host</code>, <code class="code-inline">Content-Length</code>, <code class="code-inline">Transfer-Encoding</code>) cannot be overridden without crashing HTTP state machines. SafeHeader protects against socket corruption.
+          </p>
+          <div class="prop-specs">
+            <div class="spec-row"><span class="spec-label">Forbidden</span><span class="spec-value">Host, Content-Length, Connection</span></div>
+            <div class="spec-row"><span class="spec-label">Transport</span><span class="spec-value">Upgrade, Keep-Alive, TE</span></div>
+            <div class="spec-row"><span class="spec-label">Validation</span><span class="spec-value">Pre-flight linting prevents engine errors</span></div>
+            <div class="spec-row"><span class="spec-label">Audit Log</span><span class="spec-value">Attempts to modify logged in audit ring</span></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -107,26 +256,28 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">Get Started</span>
-        <h2 class="section-title">Download &amp; Installation</h2>
+        <h2 class="section-title">Download &amp; Installation <a href="#install" class="header-permalink" aria-label="Permalink">#</a></h2>
         <p class="section-desc">
-          SafeHeader is distributed as ready-to-load ZIP bundles on GitHub Releases. Choose your browser below for step-by-step instructions.
+          SafeHeader is distributed as ready-to-load ZIP bundles on GitHub Releases. Choose your browser platform below for step-by-step instructions.
         </p>
       </div>
 
       <div class="tabs-container">
-        <div class="tabs-nav" role="tablist">
-          <button class="tab-btn active" data-tab="tab-chrome" role="tab">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.83 1.76 2.62 4.5l5.54 9.6A5.99 5.99 0 0 1 12 6h9.79C19.7 2.45 16.12 0 12 0zm-1.15 13.98l-5.6-9.7A11.96 11.96 0 0 0 0 12c0 5.48 3.68 10.1 8.71 11.53l5.54-9.6a6.002 6.002 0 0 1-3.4-.01v.06zm8.8-4.48H9.86l5.54 9.6c2.81-.46 5.16-2.39 6.25-5.02.66-1.57.99-3.27.99-5 0-.74-.06-1.46-.19-2.18-.01.8-.8 2.6-2.8 2.6zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
-            Google Chrome &amp; Chromium
-          </button>
-          <button class="tab-btn" data-tab="tab-firefox" role="tab">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 11.25a10.5 10.5 0 1 0-17.7 7.65 1.5 1.5 0 0 0 2.1-2.1 7.5 7.5 0 1 1 12.6-5.55 1.5 1.5 0 0 0 3 0z"/></svg>
-            Mozilla Firefox
-          </button>
-          <button class="tab-btn" data-tab="tab-source" role="tab">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            Build from Source
-          </button>
+        <div class="tabs-nav-wrapper">
+          <div class="tabs-nav" role="tablist">
+            <button class="tab-btn active" data-tab="tab-chrome" role="tab" aria-selected="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.83 1.76 2.62 4.5l5.54 9.6A5.99 5.99 0 0 1 12 6h9.79C19.7 2.45 16.12 0 12 0zm-1.15 13.98l-5.6-9.7A11.96 11.96 0 0 0 0 12c0 5.48 3.68 10.1 8.71 11.53l5.54-9.6a6.002 6.002 0 0 1-3.4-.01v.06zm8.8-4.48H9.86l5.54 9.6c2.81-.46 5.16-2.39 6.25-5.02.66-1.57.99-3.27.99-5 0-.74-.06-1.46-.19-2.18-.01.8-.8 2.6-2.8 2.6zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
+              Google Chrome &amp; Chromium
+            </button>
+            <button class="tab-btn" data-tab="tab-firefox" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 11.25a10.5 10.5 0 1 0-17.7 7.65 1.5 1.5 0 0 0 2.1-2.1 7.5 7.5 0 1 1 12.6-5.55 1.5 1.5 0 0 0 3 0z"/></svg>
+              Mozilla Firefox
+            </button>
+            <button class="tab-btn" data-tab="tab-source" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              Build from Source
+            </button>
+          </div>
         </div>
 
         <!-- Chrome Panel -->
@@ -147,35 +298,35 @@
               <div class="step-num">1</div>
               <div class="step-content">
                 <h5>Download &amp; Extract</h5>
-                <p>Download <code class="code-inline">safeheader-v0.1.3-chrome.zip</code> from the Releases page and extract the archive into a permanent folder on your computer.</p>
+                <p>Download <code class="code-inline">safeheader-v0.1.3-chrome.zip</code> from GitHub Releases and extract it into a local directory.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">2</div>
               <div class="step-content">
                 <h5>Open Extensions Manager</h5>
-                <p>Navigate to <code class="code-inline">chrome://extensions</code> in your Chrome address bar (or <code class="code-inline">edge://extensions</code> in Edge).</p>
+                <p>Navigate to <code class="code-inline">chrome://extensions</code> in your Chrome address bar (or <code class="code-inline">edge://extensions</code> in Microsoft Edge).</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">3</div>
               <div class="step-content">
                 <h5>Enable Developer Mode</h5>
-                <p>Toggle the <strong>Developer mode</strong> switch in the upper-right corner of the page.</p>
+                <p>Toggle the <strong>Developer mode</strong> switch in the upper-right corner of the extensions page.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">4</div>
               <div class="step-content">
-                <h5>Load Unpacked</h5>
-                <p>Click the <strong>Load unpacked</strong> button and select the extracted folder (which contains <code class="code-inline">manifest.json</code> at the root).</p>
+                <h5>Click Load Unpacked</h5>
+                <p>Click <strong>Load unpacked</strong> and choose the extracted folder (which contains <code class="code-inline">manifest.json</code> at its root).</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">5</div>
               <div class="step-content">
-                <h5>Pin &amp; Use</h5>
-                <p>Pin SafeHeader from Chrome's puzzle-piece Extensions menu, or open it directly in the <strong>Chrome Side Panel</strong> for a persistent workspace.</p>
+                <h5>Pin &amp; Access Side Panel</h5>
+                <p>Pin SafeHeader from the Chrome Extensions toolbar, or launch it in the <strong>Chrome Side Panel</strong> for a persistent workspace.</p>
               </div>
             </div>
           </div>
@@ -186,7 +337,7 @@
           <div class="download-highlight-card">
             <div class="dl-info">
               <h4>Firefox MV3 Package (v0.1.3)</h4>
-              <p>Supports Mozilla Firefox 115+ ESR and modern releases with native sidebar action.</p>
+              <p>Supports Mozilla Firefox 115+ ESR and modern releases with native Gecko sidebar action.</p>
             </div>
             <a href="https://github.com/RohithV16/safeheader/releases/latest" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -199,7 +350,7 @@
               <div class="step-num">1</div>
               <div class="step-content">
                 <h5>Download &amp; Extract</h5>
-                <p>Download <code class="code-inline">safeheader-v0.1.3-firefox.zip</code> and extract it into a local directory.</p>
+                <p>Download <code class="code-inline">safeheader-v0.1.3-firefox.zip</code> and extract the archive on your local drive.</p>
               </div>
             </div>
             <div class="step-item">
@@ -213,7 +364,7 @@
               <div class="step-num">3</div>
               <div class="step-content">
                 <h5>Load Temporary Add-on</h5>
-                <p>Click <strong>Load Temporary Add-on...</strong> and choose the <code class="code-inline">manifest.json</code> file located inside the extracted directory.</p>
+                <p>Click <strong>Load Temporary Add-on...</strong> and select <code class="code-inline">manifest.json</code> inside the extracted folder.</p>
               </div>
             </div>
             <div class="step-item">
@@ -243,10 +394,14 @@
               <div class="step-num">1</div>
               <div class="step-content">
                 <h5>Clone Repository</h5>
-                <div class="code-container" style="margin-top: 0.5rem;">
-                  <button class="copy-btn">Copy</button>
-                  <pre>git clone https://github.com/RohithV16/safeheader.git
-cd safeheader</pre>
+                <div class="code-container">
+                  <div class="code-header">
+                    <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+                    <span class="code-lang">BASH</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-body"><pre>git clone https://github.com/RohithV16/safeheader.git
+cd safeheader</pre></div>
                 </div>
               </div>
             </div>
@@ -254,10 +409,14 @@ cd safeheader</pre>
               <div class="step-num">2</div>
               <div class="step-content">
                 <h5>Install Dependencies &amp; Run Tests</h5>
-                <div class="code-container" style="margin-top: 0.5rem;">
-                  <button class="copy-btn">Copy</button>
-                  <pre>npm ci
-npm test</pre>
+                <div class="code-container">
+                  <div class="code-header">
+                    <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+                    <span class="code-lang">BASH</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-body"><pre>npm ci
+npm test</pre></div>
                 </div>
               </div>
             </div>
@@ -265,11 +424,15 @@ npm test</pre>
               <div class="step-num">3</div>
               <div class="step-content">
                 <h5>Build Distribution Packages</h5>
-                <div class="code-container" style="margin-top: 0.5rem;">
-                  <button class="copy-btn">Copy</button>
-                  <pre>npm run package</pre>
+                <div class="code-container">
+                  <div class="code-header">
+                    <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+                    <span class="code-lang">BASH</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-body"><pre>npm run package</pre></div>
                 </div>
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                <p style="margin-top: 0.65rem; font-size: 0.875rem; color: var(--text-muted);">
                   Produces <code class="code-inline">dist/</code> (Chrome), <code class="code-inline">dist-firefox/</code> (Firefox), and release zip archives in <code class="code-inline">release/</code>.
                 </p>
               </div>
@@ -280,314 +443,446 @@ npm test</pre>
     </div>
   </section>
 
-  <!-- Comprehensive Properties & Features Reference -->
+  <!-- Comprehensive Properties & Rules Reference (Bento Grid) -->
   <section id="properties" class="section">
     <div class="container">
       <div class="section-header">
         <span class="section-tag">Deep Dive</span>
-        <h2 class="section-title">Properties &amp; Rules Reference</h2>
+        <h2 class="section-title">Properties &amp; Rules Reference <a href="#properties" class="header-permalink" aria-label="Permalink">#</a></h2>
         <p class="section-desc">
-          Understand every rule type, scoping condition, filter property, and security mechanism built into SafeHeader.
+          Exhaustive specifications for every rule type, scoping condition, filter property, and security mechanism.
         </p>
       </div>
 
       <!-- Live Search & Category Chips -->
-      <div class="property-controls">
-        <div class="search-box">
-          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="propertySearch" class="search-input" placeholder="Search properties, rules, filters (e.g. cookie, CORS, regex, scope, auth)...">
+      <div class="property-controls" style="max-width: 800px; margin: 0 auto 3rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="search-box" style="position: relative; width: 100%;">
+          <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="propertySearch" style="width: 100%; padding: 0.9rem 1rem 0.9rem 2.85rem; font-size: 0.975rem; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); color: var(--text-main); outline: none;" placeholder="Search properties (e.g. cookie, CORS, regex, tab lock, scope guard)...">
         </div>
 
-        <div class="category-chips">
-          <button class="chip-btn active" data-category="all">All Properties</button>
-          <button class="chip-btn" data-category="headers">Headers</button>
-          <button class="chip-btn" data-category="cookies">Cookies</button>
-          <button class="chip-btn" data-category="params">Query Params</button>
-          <button class="chip-btn" data-category="redirects">Redirects &amp; Blocks</button>
-          <button class="chip-btn" data-category="filters">Filters &amp; Scoping</button>
-          <button class="chip-btn" data-category="security">Security &amp; Profiles</button>
+        <div class="category-chips" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem;">
+          <button class="chip-btn active" data-category="all" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">All Properties</button>
+          <button class="chip-btn" data-category="headers" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Headers</button>
+          <button class="chip-btn" data-category="cookies" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Cookies</button>
+          <button class="chip-btn" data-category="params" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Query Params</button>
+          <button class="chip-btn" data-category="redirects" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Redirects &amp; Blocks</button>
+          <button class="chip-btn" data-category="filters" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Filters &amp; Scoping</button>
+          <button class="chip-btn" data-category="security" style="padding: 0.4rem 0.85rem; font-size: 0.825rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 9999px; color: var(--text-muted); cursor: pointer;">Security &amp; Sessions</button>
         </div>
       </div>
 
-      <!-- Properties Cards Grid -->
-      <div class="properties-grid" id="propertiesGrid">
+      <!-- Bento Grid Cards -->
+      <div class="bento-grid" id="propertiesBentoGrid">
         
         <!-- 1. Request Headers -->
-        <div class="prop-card" data-category="headers">
+        <div class="bento-card bento-col-4" data-category="headers">
           <div class="prop-header">
             <h3 class="prop-title">Request Headers</h3>
             <span class="prop-tag headers">Headers</span>
           </div>
           <p class="prop-desc">
-            Modify outbound HTTP headers before requests leave the browser. Supports adding custom tracking tags, injecting Authorization Bearer tokens, or stripping unwanted browser fingerprint headers.
+            Modify outbound HTTP headers before requests leave the browser. Inject authentication tokens, simulate staging environments, or strip client fingerprinting headers.
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Operations</span><span class="spec-value">Add, Set, Remove</span></div>
-            <div class="spec-row"><span class="spec-label">DNR Action</span><span class="spec-value">modifyHeaders</span></div>
-            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">X-Debug-User: alice</span></div>
+            <div class="spec-row"><span class="spec-label">DNR Action</span><span class="spec-value">modifyHeaders (request)</span></div>
+            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">Authorization: Bearer ...</span></div>
             <div class="spec-row"><span class="spec-label">Security</span><span class="spec-value">Auto-masked credentials</span></div>
           </div>
         </div>
 
         <!-- 2. Response Headers -->
-        <div class="prop-card" data-category="headers">
+        <div class="bento-card bento-col-4" data-category="headers">
           <div class="prop-header">
             <h3 class="prop-title">Response Headers</h3>
             <span class="prop-tag headers">Headers</span>
           </div>
           <p class="prop-desc">
-            Modify incoming HTTP response headers received from remote servers. Essential for local development to bypass CORS restrictions, adjust cache controls, or test CSP policies.
+            Modify incoming HTTP response headers received from remote endpoints. Bypass local CORS errors, configure cache policies, or experiment with security headers.
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Operations</span><span class="spec-value">Add, Set, Remove</span></div>
             <div class="spec-row"><span class="spec-label">DNR Action</span><span class="spec-value">modifyHeaders (response)</span></div>
             <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">Access-Control-Allow-Origin: *</span></div>
-            <div class="spec-row"><span class="spec-label">Use Cases</span><span class="spec-value">CORS, Cache-Control</span></div>
+            <div class="spec-row"><span class="spec-label">Preflight</span><span class="spec-value">Overrides OPTIONS response</span></div>
           </div>
         </div>
 
         <!-- 3. Request Cookies -->
-        <div class="prop-card" data-category="cookies">
+        <div class="bento-card bento-col-4" data-category="cookies">
           <div class="prop-header">
             <h3 class="prop-title">Request Cookies</h3>
             <span class="prop-tag cookies">Cookies</span>
           </div>
           <p class="prop-desc">
-            Injects <code class="code-inline">name=value</code> pairs directly into outbound <code class="code-inline">Cookie</code> headers across all request types (including Document page loads, XHR, and Fetch) without polluting the browser's persistent cookie jar.
+            Injects <code class="code-inline">name=value</code> pairs directly into outbound <code class="code-inline">Cookie</code> headers across all request types without polluting Chrome or Firefox's persistent cookie jar.
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Target</span><span class="spec-value">Outbound Cookie header</span></div>
-            <div class="spec-row"><span class="spec-label">Scope Guard</span><span class="spec-value">Domain filter required</span></div>
+            <div class="spec-row"><span class="spec-label">Scope Guard</span><span class="spec-value">Domain filter enforced</span></div>
             <div class="spec-row"><span class="spec-label">Storage Impact</span><span class="spec-value">Zero cookie jar pollution</span></div>
-            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">feature_flag=dark_mode</span></div>
+            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">ab_experiment=dark_mode</span></div>
           </div>
         </div>
 
         <!-- 4. Query Parameters -->
-        <div class="prop-card" data-category="params">
+        <div class="bento-card bento-col-6" data-category="params">
           <div class="prop-header">
             <h3 class="prop-title">Query Parameters</h3>
-            <span class="prop-tag params">Query Params</span>
+            <span class="prop-tag params">Params</span>
           </div>
           <p class="prop-desc">
-            Append, overwrite, or strip URL query parameters dynamically on matching outbound requests. Perfect for toggling debug flags, injecting test API keys, or removing marketing tracking pixels.
+            Append, overwrite, or strip URL query parameters dynamically on matching outbound requests. Great for injecting test feature flags or automatically stripping marketing tracking pixels (<code class="code-inline">utm_*</code>, <code class="code-inline">fbclid</code>).
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Operations</span><span class="spec-value">Append, Set, Remove</span></div>
             <div class="spec-row"><span class="spec-label">DNR Action</span><span class="spec-value">redirect.transform.queryTransform</span></div>
-            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">debug=true</span></div>
-            <div class="spec-row"><span class="spec-label">Strip Example</span><span class="spec-value">Remove: utm_source</span></div>
+            <div class="spec-row"><span class="spec-label">Example</span><span class="spec-value">debug=true &amp; env=staging</span></div>
+            <div class="spec-row"><span class="spec-label">Strip Example</span><span class="spec-value">Remove: utm_source, utm_medium</span></div>
           </div>
         </div>
 
         <!-- 5. Redirects & Blocks -->
-        <div class="prop-card" data-category="redirects">
+        <div class="bento-card bento-col-6" data-category="redirects">
           <div class="prop-header">
             <h3 class="prop-title">Redirects &amp; Blocks</h3>
             <span class="prop-tag redirects">Redirects</span>
           </div>
           <p class="prop-desc">
-            Redirect matching URLs to alternate endpoints (e.g. redirecting staging API requests to <code class="code-inline">http://localhost:3000</code>) or completely block requests matching ad networks, tracking telemetry, or mock endpoints.
+            Redirect matching URLs to alternate endpoints (e.g. redirecting remote production scripts to <code class="code-inline">http://localhost:3000</code>) or block ad networks, tracking telemetry, and mock endpoints entirely.
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Actions</span><span class="spec-value">Redirect, Block</span></div>
             <div class="spec-row"><span class="spec-label">DNR Action</span><span class="spec-value">redirect / block</span></div>
-            <div class="spec-row"><span class="spec-label">Redirect To</span><span class="spec-value">Full URL or local host</span></div>
+            <div class="spec-row"><span class="spec-label">Redirect Target</span><span class="spec-value">Full URL or localhost port</span></div>
             <div class="spec-row"><span class="spec-label">Block Example</span><span class="spec-value">*://analytics.example.com/*</span></div>
           </div>
         </div>
 
-        <!-- 6. URL Filters (Include / Exclude) -->
-        <div class="prop-card" data-category="filters">
+        <!-- 6. URL Filters (Wildcard vs Regex) -->
+        <div class="bento-card bento-col-6" data-category="filters">
           <div class="prop-header">
-            <h3 class="prop-title">URL Filters</h3>
+            <h3 class="prop-title">URL Filters (Wildcard &amp; RE2 Regex)</h3>
             <span class="prop-tag filters">Filters</span>
           </div>
           <p class="prop-desc">
-            Constrain profile execution to specific hostnames or endpoints. Supports both fast Chrome wildcard syntax and full RE2 Regular Expressions. Exclude filters override include filters to safeguard auth domains.
+            Constrain profile execution to specific hostnames or endpoints. Supports both fast Chrome wildcard syntax (<code class="code-inline">*://*.corp.internal/*</code>) and full RE2 Regular Expressions. Exclude filters override include filters.
           </p>
           <div class="prop-specs">
             <div class="spec-row"><span class="spec-label">Types</span><span class="spec-value">Include, Exclude</span></div>
             <div class="spec-row"><span class="spec-label">Syntaxes</span><span class="spec-value">Wildcard, RE2 Regex</span></div>
-            <div class="spec-row"><span class="spec-label">Wildcard</span><span class="spec-value">*://*.corp.internal/*</span></div>
-            <div class="spec-row"><span class="spec-label">Regex</span><span class="spec-value">^https://api\.corp/v[0-9]+/.*</span></div>
+            <div class="spec-row"><span class="spec-label">Wildcard Spec</span><span class="spec-value">*://*.corp.internal/*</span></div>
+            <div class="spec-row"><span class="spec-label">Regex Spec</span><span class="spec-value">^https://api\.corp/v[0-9]+/.*</span></div>
           </div>
         </div>
 
         <!-- 7. Resource Types Filter -->
-        <div class="prop-card" data-category="filters">
+        <div class="bento-card bento-col-6" data-category="filters">
           <div class="prop-header">
-            <h3 class="prop-title">Resource Types</h3>
+            <h3 class="prop-title">Resource Types Filter</h3>
             <span class="prop-tag filters">Filters</span>
           </div>
           <p class="prop-desc">
-            Filter by network request classification. By default, rules apply to all resource types (including initial HTML page loads). Select one or more chips to limit modifications to specific assets.
+            Filter network requests by browser classification. By default, rules apply across all resource types (including initial HTML Document page loads). Select one or more chips to limit modifications.
           </p>
           <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Options</span><span class="spec-value">Document, XHR/Fetch, Script</span></div>
-            <div class="spec-row"><span class="spec-label">Assets</span><span class="spec-value">Stylesheet, Image, Font</span></div>
-            <div class="spec-row"><span class="spec-label">Connections</span><span class="spec-value">WebSocket, Media, Other</span></div>
-            <div class="spec-row"><span class="spec-label">Default</span><span class="spec-value">All matched (unconstrained)</span></div>
+            <div class="spec-row"><span class="spec-label">HTML &amp; API</span><span class="spec-value">Document, Iframe, XHR/Fetch</span></div>
+            <div class="spec-row"><span class="spec-label">Assets</span><span class="spec-value">Script, Stylesheet, Image, Font</span></div>
+            <div class="spec-row"><span class="spec-label">Streaming</span><span class="spec-value">WebSocket, Media, Other</span></div>
+            <div class="spec-row"><span class="spec-label">Default</span><span class="spec-value">All types matched (unconstrained)</span></div>
           </div>
         </div>
 
-        <!-- 8. HTTP Methods Filter -->
-        <div class="prop-card" data-category="filters">
+        <!-- 8. Strict Scope Guard (Hero Card) -->
+        <div class="bento-card bento-col-8" data-category="security">
           <div class="prop-header">
-            <h3 class="prop-title">HTTP Methods</h3>
-            <span class="prop-tag filters">Filters</span>
+            <h3 class="prop-title">Strict Scope Guard</h3>
+            <span class="prop-tag security">Security Guard</span>
           </div>
           <p class="prop-desc">
-            Target rules specifically to matching HTTP request verbs. Great for applying payloads only to mutations (<code class="code-inline">POST</code> / <code class="code-inline">PUT</code>) while leaving idempotent reads (<code class="code-inline">GET</code>) untouched.
+            Active by default. Prevents sensitive credentials (<code class="code-inline">Authorization</code>, <code class="code-inline">Cookie</code>, <code class="code-inline">*token*</code>, <code class="code-inline">*secret*</code>, <code class="code-inline">*key*</code>, <code class="code-inline">*auth*</code>) from ever leaking globally across wildcard <code class="code-inline">*</code> URLs. Requires an explicit domain URL filter before rules are compiled into the network engine.
           </p>
           <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Supported</span><span class="spec-value">GET, POST, PUT, PATCH</span></div>
-            <div class="spec-row"><span class="spec-label">Advanced</span><span class="spec-value">DELETE, HEAD, OPTIONS</span></div>
-            <div class="spec-row"><span class="spec-label">Preflight</span><span class="spec-value">Target OPTIONS for CORS</span></div>
-            <div class="spec-row"><span class="spec-label">Default</span><span class="spec-value">All methods matched</span></div>
+            <div class="spec-row"><span class="spec-label">Enforcement</span><span class="spec-value">Compile-time DNR block &amp; warning banner</span></div>
+            <div class="spec-row"><span class="spec-label">Protected Patterns</span><span class="spec-value">Authorization, Cookie, *token*, *secret*, *key*</span></div>
+            <div class="spec-row"><span class="spec-label">1-Click Auto Fix</span><span class="spec-value">Click "Scope This Site" in toolbar</span></div>
+            <div class="spec-row"><span class="spec-label">Governance</span><span class="spec-value">Enforceable via chrome.storage.managed</span></div>
           </div>
         </div>
 
-        <!-- 9. Profiles & Multi-Profile Mode -->
-        <div class="prop-card" data-category="security">
+        <!-- 9. Tab Lock Mode (Ephemeral Sessions) -->
+        <div class="bento-card bento-col-4" data-category="security">
           <div class="prop-header">
-            <h3 class="prop-title">Profiles &amp; Rail</h3>
+            <h3 class="prop-title">Tab Lock Mode</h3>
+            <span class="prop-tag security">Sessions</span>
+          </div>
+          <p class="prop-desc">
+            Constrain profile execution strictly to the active tab via ephemeral <code class="code-inline">tabId</code> session rules. Prevents experimental headers from bleeding into other browsing tabs.
+          </p>
+          <div class="prop-specs">
+            <div class="spec-row"><span class="spec-label">Mechanism</span><span class="spec-value">declarativeNetRequest tabId condition</span></div>
+            <div class="spec-row"><span class="spec-label">Storage</span><span class="spec-value">In-memory session DNR</span></div>
+            <div class="spec-row"><span class="spec-label">Isolation</span><span class="spec-value">100% isolated to single tab</span></div>
+            <div class="spec-row"><span class="spec-label">Durability</span><span class="spec-value">Auto-cleared on tab close</span></div>
+          </div>
+        </div>
+
+        <!-- 10. Profiles & Multi-Profile Rail -->
+        <div class="bento-card bento-col-6" data-category="security">
+          <div class="prop-header">
+            <h3 class="prop-title">Profiles &amp; Multi-Profile Rail</h3>
             <span class="prop-tag security">Profiles</span>
           </div>
           <p class="prop-desc">
-            Organize rule sets into isolated profiles. Customize badge chips (1-3 characters) and profile colors. Supports Single-Profile mode (one active at a time) and Multi-Profile mode (multiple profiles run in parallel).
+            Organize rule sets into isolated profiles. Customize badge chips (1–3 characters) and profile colors. Supports Single-Profile mode (one active at a time) and Multi-Profile mode (multiple profiles execute simultaneously).
           </p>
           <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Modes</span><span class="spec-value">Single, Multi-Profile</span></div>
-            <div class="spec-row"><span class="spec-label">Badges</span><span class="spec-value">Custom 1-3 chars + color chip</span></div>
-            <div class="spec-row"><span class="spec-label">Cloning</span><span class="spec-value">Gap-filling auto numbering</span></div>
-            <div class="spec-row"><span class="spec-label">Toggle</span><span class="spec-value">Master pause/play button</span></div>
+            <div class="spec-row"><span class="spec-label">Modes</span><span class="spec-value">Single Profile, Multi-Profile parallel</span></div>
+            <div class="spec-row"><span class="spec-label">Badge Chips</span><span class="spec-value">Custom 1–3 characters + color picker</span></div>
+            <div class="spec-row"><span class="spec-label">Cloning</span><span class="spec-value">Gap-filling auto profile numbering</span></div>
+            <div class="spec-row"><span class="spec-label">Master Switch</span><span class="spec-value">Global pause/play button</span></div>
           </div>
         </div>
 
-        <!-- 10. Strict Scope Guard -->
-        <div class="prop-card" data-category="security">
+        <!-- 11. Presentation Mode & Secret Masking -->
+        <div class="bento-card bento-col-6" data-category="security">
           <div class="prop-header">
-            <h3 class="prop-title">Strict Scope Guard</h3>
-            <span class="prop-tag security">Security</span>
+            <h3 class="prop-title">Presentation Mode &amp; Secret Masking</h3>
+            <span class="prop-tag security">Privacy</span>
           </div>
           <p class="prop-desc">
-            Active by default. Prevents sensitive credentials (<code class="code-inline">Authorization</code>, <code class="code-inline">Cookie</code>, <code class="code-inline">*token*</code>, <code class="code-inline">*secret*</code>, <code class="code-inline">*key*</code>) from ever leaking globally across wildcard <code class="code-inline">*</code> URLs.
+            Sensitive headers and all cookie values are visually masked with bullet dots (<code class="code-inline">&bull;&bull;&bull;&bull;&bull;&bull;</code>) to protect against over-the-shoulder leaks and screen recordings. Presentation Mode locks secrets against unmasking during live demos.
           </p>
           <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Enforcement</span><span class="spec-value">Compile-time DNR block</span></div>
-            <div class="spec-row"><span class="spec-label">Requirement</span><span class="spec-value">Must configure URL filter</span></div>
-            <div class="spec-row"><span class="spec-label">Quick Fix</span><span class="spec-value">1-Click "Scope This Site"</span></div>
-            <div class="spec-row"><span class="spec-label">UI Alert</span><span class="spec-value">Prominent warning banner</span></div>
-          </div>
-        </div>
-
-        <!-- 11. Secret Masking & Row Actions -->
-        <div class="prop-card" data-category="security">
-          <div class="prop-header">
-            <h3 class="prop-title">Secret Masking &amp; Order</h3>
-            <span class="prop-tag security">Security</span>
-          </div>
-          <p class="prop-desc">
-            Sensitive headers and all cookie values are visually masked with bullet dots (<code class="code-inline">&bull;&bull;&bull;&bull;&bull;&bull;</code>) to protect against over-the-shoulder leaks and screen recordings. Includes Move Up / Down row reordering.
-          </p>
-          <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Masking</span><span class="spec-value">Eye toggle on sensitive rows</span></div>
-            <div class="spec-row"><span class="spec-label">Reordering</span><span class="spec-value">Move Up / Move Down actions</span></div>
-            <div class="spec-row"><span class="spec-label">Clipboard</span><span class="spec-value">No accidental secret copy</span></div>
-            <div class="spec-row"><span class="spec-label">Accessibility</span><span class="spec-value">Accessible aria-labels</span></div>
-          </div>
-        </div>
-
-        <!-- 12. 1-Click Scope This Site -->
-        <div class="prop-card" data-category="filters">
-          <div class="prop-header">
-            <h3 class="prop-title">1-Click Scope This Site</h3>
-            <span class="prop-tag filters">Filters</span>
-          </div>
-          <p class="prop-desc">
-            Clicking the crosshair/scope icon in the top toolbar automatically extracts the active tab's hostname and adds an include URL filter (<code class="code-inline">*://&lt;current-host&gt;/*</code>) to the active profile in one motion.
-          </p>
-          <div class="prop-specs">
-            <div class="spec-row"><span class="spec-label">Permission</span><span class="spec-value">activeTab (zero history access)</span></div>
-            <div class="spec-row"><span class="spec-label">Action</span><span class="spec-value">Auto-adds include URL filter</span></div>
-            <div class="spec-row"><span class="spec-label">Satisfaction</span><span class="spec-value">Immediately unlocks Scope Guard</span></div>
-            <div class="spec-row"><span class="spec-label">Target</span><span class="spec-value">Active profile in workspace</span></div>
+            <div class="spec-row"><span class="spec-label">Masking</span><span class="spec-value">Per-row eye reveal toggle</span></div>
+            <div class="spec-row"><span class="spec-label">Presentation Lock</span><span class="spec-value">Disables eye toggles during screen share</span></div>
+            <div class="spec-row"><span class="spec-label">Reordering</span><span class="spec-value">Move Up / Move Down row actions</span></div>
+            <div class="spec-row"><span class="spec-label">Accessibility</span><span class="spec-value">Screen-reader safe aria-labels</span></div>
           </div>
         </div>
 
       </div>
 
       <!-- No search results fallback message -->
-      <div id="noResultsMessage" style="display: none; text-align: center; padding: 3rem 0; color: var(--text-muted);">
-        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No matching properties found.</p>
+      <div id="noResultsMessage" style="display: none; text-align: center; padding: 3rem 0; color: var(--text-faint);">
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-main);">No matching properties found.</p>
         <p style="font-size: 0.9rem;">Try clearing your search query or selecting "All Properties".</p>
       </div>
     </div>
   </section>
 
-  <!-- Enterprise Security & Audit Controls Section -->
+  <!-- Interactive URL Filter Sandbox Widget Section -->
+  <section id="sandbox" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Sandbox</span>
+        <h2 class="section-title">Live URL Filter Matcher <a href="#sandbox" class="header-permalink" aria-label="Permalink">#</a></h2>
+        <p class="section-desc">
+          Test whether your wildcard or regular expression pattern matches a target URL in real time before configuring your rules.
+        </p>
+      </div>
+
+      <div class="sandbox-card">
+        <div class="sandbox-header">
+          <h4 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem;">URL Filter Evaluator</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem;">Enter a live URL and filter pattern to test Declarative Net Request matching behavior.</p>
+        </div>
+
+        <div class="sandbox-grid">
+          <div class="sandbox-input-group">
+            <label for="sandboxUrl">Test Request URL</label>
+            <input type="text" id="sandboxUrl" class="sandbox-input" value="https://api.staging.internal.corp/v1/auth/token">
+          </div>
+          <div class="sandbox-input-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label for="sandboxPattern" style="margin-bottom: 0;">Filter Pattern</label>
+              <select id="sandboxType" style="background-color: var(--bg-base); border: 1px solid var(--border-color); color: var(--accent-cyan); font-size: 0.75rem; border-radius: 4px; padding: 0.15rem 0.5rem; font-weight: 600;">
+                <option value="wildcard">Wildcard (*://*)</option>
+                <option value="regex">RE2 Regex (^https://...)</option>
+              </select>
+            </div>
+            <input type="text" id="sandboxPattern" class="sandbox-input" value="*://*.staging.internal.corp/*">
+          </div>
+        </div>
+
+        <div id="sandboxResult" class="sandbox-result match">
+          <span>✓ MATCH — SafeHeader rules will execute on this request</span>
+          <span class="badge badge-emerald">ALLOWED</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Competitive Comparison Matrix Section -->
+  <section id="comparison" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Comparison Matrix</span>
+        <h2 class="section-title">SafeHeader vs. Alternatives <a href="#comparison" class="header-permalink" aria-label="Permalink">#</a></h2>
+        <p class="section-desc">
+          Why enterprise engineering and security teams choose SafeHeader over cloud-based or legacy header extensions.
+        </p>
+      </div>
+
+      <div class="matrix-container">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Feature / Metric</th>
+              <th class="matrix-safeheader-col">SafeHeader</th>
+              <th>ModHeader</th>
+              <th>Requestly</th>
+              <th>Header Editor</th>
+              <th>Charles / Fiddler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>100% Local Storage</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (chrome.storage.local)</td>
+              <td>✕ Cloud Sync / Account</td>
+              <td>✕ Cloud Account Required</td>
+              <td>✓ Local Storage</td>
+              <td>✓ Local App</td>
+            </tr>
+            <tr>
+              <td><strong>Zero Outbound Telemetry</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (connect-src 'none')</td>
+              <td>✕ Analytics / Tracking</td>
+              <td>✕ Product Analytics</td>
+              <td>✓ None</td>
+              <td>✕ Telemetry</td>
+            </tr>
+            <tr>
+              <td><strong>Strict Scope Guard</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (Blocks wildcard secrets)</td>
+              <td>✕ No (Leaks globally)</td>
+              <td>✕ No</td>
+              <td>✕ No</td>
+              <td>✕ No</td>
+            </tr>
+            <tr>
+              <td><strong>Zero Export Policy</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (Enforced local)</td>
+              <td>✕ Export JSON / Profiles</td>
+              <td>✕ Cloud Workspace Export</td>
+              <td>✕ Export / Import</td>
+              <td>✕ Session Exports</td>
+            </tr>
+            <tr>
+              <td><strong>Native DNR Engine (MV3)</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (Zero JS latency)</td>
+              <td>✓ Hybrid MV3</td>
+              <td>✓ Hybrid MV3</td>
+              <td>✕ Legacy WebRequest</td>
+              <td>✕ Local Proxy Overhead</td>
+            </tr>
+            <tr>
+              <td><strong>Local Audit Log</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (20-entry FIFO ring)</td>
+              <td>✕ No</td>
+              <td>✕ No</td>
+              <td>✕ No</td>
+              <td>✓ Proxy Log</td>
+            </tr>
+            <tr>
+              <td><strong>Enterprise Managed Policies</strong></td>
+              <td class="matrix-safeheader-col">✓ Yes (chrome.storage.managed)</td>
+              <td>✕ Paid Tier Only</td>
+              <td>✕ Enterprise Tier Only</td>
+              <td>✕ No</td>
+              <td>✕ Custom Config</td>
+            </tr>
+            <tr>
+              <td><strong>Cross-Browser Support</strong></td>
+              <td class="matrix-safeheader-col">✓ Chrome &amp; Firefox MV3</td>
+              <td>✓ Chrome &amp; Firefox</td>
+              <td>✓ Chrome &amp; Firefox</td>
+              <td>✓ Chrome &amp; Firefox</td>
+              <td>✓ OS-wide Proxy</td>
+            </tr>
+            <tr>
+              <td><strong>Free &amp; Open Source</strong></td>
+              <td class="matrix-safeheader-col">✓ MIT License (100% Free)</td>
+              <td>✕ Freemium / Paid</td>
+              <td>✕ Subscription / Paid</td>
+              <td>✓ Open Source</td>
+              <td>✕ Commercial License</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enterprise Security & Compliance Section -->
   <section id="security" class="section">
     <div class="container">
       <div class="section-header">
         <span class="section-tag">Security Architecture</span>
-        <h2 class="section-title">Enterprise Security &amp; Compliance</h2>
+        <h2 class="section-title">Enterprise Security &amp; Compliance <a href="#security" class="header-permalink" aria-label="Permalink">#</a></h2>
         <p class="section-desc">
-          Built from the ground up for strict corporate environments where data leakage, exfiltration, and telemetry are zero-tolerance risks.
+          Designed from the ground up for zero-trust environments where exfiltration and telemetry are non-negotiable risks.
         </p>
       </div>
 
+      <!-- Scope Guard Decision Flow SVG Showcase -->
+      <div style="margin-bottom: 4rem;" data-lightbox="assets/scope-guard-flow.svg" data-caption="SafeHeader Strict Scope Guard Decision Engine">
+        <img src="assets/scope-guard-flow.svg" alt="Scope Guard Flowchart" style="width: 100%; border-radius: var(--radius-xl); box-shadow: var(--shadow-card); cursor: zoom-in; display: block;" loading="lazy">
+      </div>
+
       <!-- Spotlight 1: Zero Export & Control Panel -->
-      <div class="security-grid">
+      <div class="security-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; margin-bottom: 4rem;">
         <div class="security-content">
-          <h3>100% Local Storage &amp; Zero Outbound Export</h3>
-          <p>
-            Unlike traditional extensions that sync credentials to third-party clouds or allow unencrypted profile exports, SafeHeader stores all data strictly inside Chrome's private <code class="code-inline">chrome.storage.local</code>.
+          <h3 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em;">100% Local Storage &amp; Zero Outbound Export</h3>
+          <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem;">
+            Unlike traditional extensions that sync credentials to third-party cloud servers or allow unencrypted profile exports, SafeHeader stores all data strictly inside the browser's private <code class="code-inline">chrome.storage.local</code>.
           </p>
-          <ul class="security-points">
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <ul class="security-points" style="display: flex; flex-direction: column; gap: 0.85rem; list-style: none;">
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span><strong>Zero Export Policy:</strong> Profile export, JSON download, and bulk clipboard export are intentionally disabled.</span>
             </li>
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span><strong>Zero Network Telemetry:</strong> Strict Content Security Policy (<code class="code-inline">connect-src 'none'</code>) guarantees no outbound HTTP requests.</span>
             </li>
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span><strong>One-Click Storage Wipe:</strong> Purge all local profiles, snapshots, and dynamic DNR rules instantly.</span>
             </li>
           </ul>
         </div>
-        <div class="security-visual-frame" data-lightbox="assets/controlPanek.png" data-caption="SafeHeader Security Controls &amp; Storage Management Modal">
-          <img src="assets/controlPanek.png" alt="SafeHeader Security Controls Modal" loading="lazy">
+        <div class="security-visual-frame" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); cursor: zoom-in;" data-lightbox="assets/controlPanel.png" data-caption="SafeHeader Security Controls &amp; Storage Management Modal">
+          <img src="assets/controlPanel.png" alt="SafeHeader Security Controls Modal" style="width: 100%; display: block;" loading="lazy">
         </div>
       </div>
 
       <!-- Spotlight 2: Audit Log Ring Buffer -->
-      <div class="security-grid reversed">
+      <div class="security-grid reversed" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; margin-bottom: 4rem;">
         <div class="security-content">
-          <h3>Local Audit Log &amp; Compliance Ring Buffer</h3>
-          <p>
+          <h3 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em;">Local Audit Log &amp; Compliance Ring Buffer</h3>
+          <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem;">
             Every security action, rule modification, and scope violation is recorded in a metadata-only FIFO ring buffer capped at the last 20 events.
           </p>
-          <ul class="security-points">
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              <span><strong>Metadata Only:</strong> Headers and cookie values are never logged in plain text. Only rule names, action types, and timestamps are captured.</span>
+          <ul class="security-points" style="display: flex; flex-direction: column; gap: 0.85rem; list-style: none;">
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span><strong>Metadata Only:</strong> Header and cookie values are never logged in plain text. Only rule names, action types, and timestamps are captured.</span>
             </li>
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span><strong>Fixed Capacity:</strong> Strictly capped at 20 entries to prevent memory growth or storage bloat.</span>
             </li>
-            <li class="point-item">
-              <svg class="point-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <li class="point-item" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+              <svg style="color: var(--accent-emerald); flex-shrink: 0;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span><strong>Local Purge:</strong> Clear audit log events anytime directly from the Security Controls modal.</span>
             </li>
           </ul>
         </div>
-        <div class="security-visual-frame" data-lightbox="assets/audit-log.png" data-caption="SafeHeader Local Audit Log Ring Buffer">
-          <img src="assets/audit-log.png" alt="SafeHeader Local Audit Log Interface" loading="lazy">
+        <div class="security-visual-frame" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); cursor: zoom-in;" data-lightbox="assets/audit-log.png" data-caption="SafeHeader Local Audit Log Ring Buffer">
+          <img src="assets/audit-log.png" alt="SafeHeader Local Audit Log Interface" style="width: 100%; display: block;" loading="lazy">
         </div>
       </div>
 
@@ -599,46 +894,47 @@ npm test</pre>
     <div class="container">
       <div class="section-header">
         <span class="section-tag">Recipes</span>
-        <h2 class="section-title">Developer Cookbook</h2>
+        <h2 class="section-title">Developer Cookbook <a href="#cookbook" class="header-permalink" aria-label="Permalink">#</a></h2>
         <p class="section-desc">
-          Ready-to-use recipes for common web development and testing scenarios.
+          Ready-to-use recipes for common web development, testing, and debugging scenarios.
         </p>
       </div>
 
-      <div class="recipe-cards">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.75rem;">
         
         <!-- Recipe 1: Bearer Token -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Authentication</div>
-            <h4 class="recipe-title">Inject Bearer Token into Staging APIs</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Inject an Authorization token on all requests to your staging cluster without hardcoding it in source code.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Authentication</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Inject Bearer Token into Staging APIs</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Inject an Authorization header on all requests to your staging cluster without hardcoding it in source code.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule: Request Header]
+            </div>
+            <div class="code-body"><pre>[Rule: Request Header]
 Name: Authorization
 Value: Bearer eyJhbGciOi...
 Operation: Set
 
 [Filter: Include URL]
-*://api.staging.internal/*</pre>
-            </div>
+*://api.staging.internal/*</pre></div>
           </div>
         </div>
 
         <!-- Recipe 2: Fix Local CORS -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Development</div>
-            <h4 class="recipe-title">Fix Local CORS Development Errors</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Allow your local frontend running on localhost:3000 to call remote backend microservices by overriding response headers.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Development</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Universal CORS Bypass for Localhost</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Allow your local frontend running on localhost:3000 to call remote backend microservices by overriding response headers.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule 1: Response Header]
+            </div>
+            <div class="code-body"><pre>[Rule 1: Response Header]
 Name: Access-Control-Allow-Origin
 Value: http://localhost:3000
 Operation: Set
@@ -649,87 +945,240 @@ Value: true
 Operation: Set
 
 [Filter: Include URL]
-*://api.dev.example.com/*</pre>
-            </div>
+*://api.dev.example.com/*</pre></div>
           </div>
         </div>
 
         <!-- Recipe 3: Cookie Injection -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Feature Flags</div>
-            <h4 class="recipe-title">Inject Feature Flag / Session Cookie</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Inject a session or experiment cookie across all document page loads and XHR requests without modifying browser cookies.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Feature Flags</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Inject Feature Flag / Session Cookie</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Inject a session or experiment cookie across all document page loads and XHR requests without modifying browser cookies.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule: Add Cookie]
+            </div>
+            <div class="code-body"><pre>[Rule: Add Cookie]
 Name: ab_experiment_tier
 Value: beta_v2
 
 [Filter: Include URL]
-*://*.app.corp/*</pre>
-            </div>
+*://*.app.corp/*</pre></div>
           </div>
         </div>
 
         <!-- Recipe 4: Redirect Remote Asset -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Redirects</div>
-            <h4 class="recipe-title">Redirect Remote Script to Localhost</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Test a new JavaScript bundle live against a production or staging application without deploying.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Redirects</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Redirect Remote Script to Localhost</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Test a new JavaScript bundle live against a production or staging application without deploying.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule: Redirect]
+            </div>
+            <div class="code-body"><pre>[Rule: Redirect]
 Match URL: *://cdn.example.com/assets/bundle.js
 Redirect To: http://localhost:8080/bundle.js
 
 [Filter: Resource Types]
-Script</pre>
-            </div>
+Script</pre></div>
           </div>
         </div>
 
         <!-- Recipe 5: Strip Tracking Query Params -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Privacy</div>
-            <h4 class="recipe-title">Strip Marketing Tracking Parameters</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Automatically remove telemetry and UTM tracking parameters from outbound URLs.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Privacy</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Strip Marketing Tracking Parameters</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Automatically remove telemetry and UTM tracking parameters from outbound URLs.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule: Query Parameter]
+            </div>
+            <div class="code-body"><pre>[Rule: Query Parameter]
 Name: utm_source
 Operation: Remove
 
 [Rule: Query Parameter]
 Name: fbclid
-Operation: Remove</pre>
-            </div>
+Operation: Remove</pre></div>
           </div>
         </div>
 
         <!-- Recipe 6: Block Analytics & Trackers -->
-        <div class="recipe-card">
-          <div class="recipe-header">
-            <div class="recipe-badge">Network Control</div>
-            <h4 class="recipe-title">Block Third-Party Trackers &amp; Pixels</h4>
-          </div>
-          <div class="recipe-body">
-            <p>Prevent third-party tracking scripts from firing in your local testing and QA environments.</p>
-            <div class="code-container">
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Network Control</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Block Third-Party Trackers &amp; Pixels</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Prevent third-party tracking scripts from firing in your local testing and QA environments.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
               <button class="copy-btn">Copy</button>
-              <pre>[Rule: Block]
+            </div>
+            <div class="code-body"><pre>[Rule: Block]
 Target URL: *://analytics.google.com/*
 
 [Rule: Block]
-Target URL: *://connect.facebook.net/*</pre>
+Target URL: *://connect.facebook.net/*</pre></div>
+          </div>
+        </div>
+
+        <!-- Recipe 7: GraphQL Query Header Tagging -->
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Observability</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">GraphQL Query Tracing &amp; Debug Tags</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Tag outbound GraphQL requests with distributed tracing headers for Apollo / OpenTelemetry.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <div class="code-body"><pre>[Rule: Request Header]
+Name: X-Apollo-Tracing
+Value: 1
+Operation: Set
+
+[Rule: Request Header]
+Name: X-Request-Source
+Value: safeheader-qa-profiler
+Operation: Set
+
+[Filter: Include URL]
+*://api.corp.internal/graphql*</pre></div>
+          </div>
+        </div>
+
+        <!-- Recipe 8: Mobile User-Agent Emulation -->
+        <div class="bento-card">
+          <div class="recipe-badge" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.4rem;">Emulation</div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Mobile User-Agent Header Emulation</h4>
+          <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">Emulate mobile device traffic on the wire for server-side responsive rendering detection.</p>
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-dots"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+              <span class="code-lang">CONFIG</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <div class="code-body"><pre>[Rule: Request Header]
+Name: User-Agent
+Value: Mozilla/5.0 (iPhone; CPU iPhone OS 17_4) Mobile/15E148 Safari/604.1
+Operation: Set
+
+[Filter: Resource Types]
+Document, XHR / Fetch</pre></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical FAQ Accordion Section -->
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">FAQ</span>
+        <h2 class="section-title">Technical Frequently Asked Questions <a href="#faq" class="header-permalink" aria-label="Permalink">#</a></h2>
+        <p class="section-desc">
+          Common architectural and troubleshooting questions answered by our engineering team.
+        </p>
+      </div>
+
+      <div class="faq-container">
+        
+        <!-- FAQ 1 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>Why is profile export or JSON download intentionally disabled?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                SafeHeader is built specifically for corporate security and zero-trust developer environments. Traditional extensions allow developers to export sensitive profiles (which often contain internal API keys, Bearer tokens, and staging cookies) into unencrypted JSON files that can accidentally be committed to git repositories or shared across insecure channels. SafeHeader stores all data in <code class="code-inline">chrome.storage.local</code> with automated snapshot recovery, while strictly preventing data exfiltration.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>Why don't my modified headers show up in Chrome DevTools Network panel?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                Chromium's DevTools Network panel displays headers before Declarative Net Request rules modify them on outbound socket dispatch. To verify that your headers are arriving on the wire, inspect your backend server logs or run our dev test server: <code class="code-inline">npm run echo-server</code>, which echoes back the exact raw wire headers received.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>How does SafeHeader handle CORS preflight OPTIONS requests?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                Because SafeHeader leverages native <code class="code-inline">declarativeNetRequest</code> with response header modification, rules targeting <code class="code-inline">Access-Control-Allow-Origin: *</code> apply directly to browser preflight <code class="code-inline">OPTIONS</code> responses as well as standard GET/POST responses. This eliminates CORS preflight failures across cross-origin microfrontends.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>Can SafeHeader inject cookies without polluting the browser's cookie jar?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                Yes! SafeHeader modifies the outbound <code class="code-inline">Cookie</code> header on HTTP requests directly. It does not call <code class="code-inline">chrome.cookies.set()</code> or pollute the browser's persistent storage. The moment you disable the profile or close the tab, no residual cookies remain on your machine.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>What happens if I try to add an Authorization header without a URL filter?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                <strong>Strict Scope Guard</strong> will immediately flag the rule. The rule will be quarantined and prevented from compiling into the browser's network rules until you either add a domain URL filter (e.g. <code class="code-inline">*://*.corp.internal/*</code>) or click <strong>1-Click Scope This Site</strong>. This guarantees sensitive tokens never leak to third-party domains.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="faq-item">
+          <button class="faq-question-btn">
+            <span>Can IT administrators enforce corporate policies via MDM?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer-wrapper">
+            <div class="faq-answer-content">
+              <div class="faq-answer-inner">
+                Yes. SafeHeader supports <code class="code-inline">chrome.storage.managed</code> schema deployment. IT administrators can deploy corporate policies via Google Admin Console, Jamf, or Microsoft Intune to enforce Strict Scope Guard, enforce secret masking, and provision managed profiles that developers cannot tamper with.
+              </div>
             </div>
           </div>
         </div>
@@ -743,61 +1192,76 @@ Target URL: *://connect.facebook.net/*</pre>
     <div class="container">
       <div class="section-header">
         <span class="section-tag">Visual Tour</span>
-        <h2 class="section-title">Extension Screenshots</h2>
+        <h2 class="section-title">Extension Screenshots <a href="#gallery" class="header-permalink" aria-label="Permalink">#</a></h2>
         <p class="section-desc">
           Click any screenshot below to inspect the interface in high resolution.
         </p>
       </div>
 
-      <div class="gallery-grid">
+      <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
         
         <!-- Screenshot 1 -->
-        <div class="gallery-card" data-lightbox="assets/extension.png" data-caption="SafeHeader Main Extension Interface &amp; Profiles Rail">
-          <div class="gallery-thumb">
-            <img src="assets/extension.png" alt="SafeHeader Workspace Interface" loading="lazy">
+        <div class="gallery-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; cursor: zoom-in;" data-lightbox="assets/extension.png" data-caption="SafeHeader Main Extension Interface &amp; Profiles Rail">
+          <div class="gallery-thumb" style="aspect-ratio: 16/10; overflow: hidden; background-color: #020617;">
+            <img src="assets/extension.png" alt="SafeHeader Workspace Interface" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
           </div>
-          <div class="gallery-caption">
-            <h5>Main Workspace</h5>
-            <p>Profile rail, rule builder, active badge indicators, and master pause/play switch.</p>
+          <div class="gallery-caption" style="padding: 1.25rem;">
+            <h5 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">Main Workspace</h5>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Profile rail, rule builder, active badge indicators, and master pause/play switch.</p>
           </div>
         </div>
 
         <!-- Screenshot 2 -->
-        <div class="gallery-card" data-lightbox="assets/controls.png" data-caption="Filter Bar, Rule Category Menus, and 1-Click Scope Controls">
-          <div class="gallery-thumb">
-            <img src="assets/controls.png" alt="Controls and Filter Toolbar" loading="lazy">
+        <div class="gallery-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; cursor: zoom-in;" data-lightbox="assets/controls.png" data-caption="Filter Bar, Rule Category Menus, and 1-Click Scope Controls">
+          <div class="gallery-thumb" style="aspect-ratio: 16/10; overflow: hidden; background-color: #020617;">
+            <img src="assets/controls.png" alt="Controls and Filter Toolbar" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
           </div>
-          <div class="gallery-caption">
-            <h5>Controls &amp; Filters</h5>
-            <p>Add-rule menus, URL filters, resource type chips, and 1-Click Scope This Site.</p>
+          <div class="gallery-caption" style="padding: 1.25rem;">
+            <h5 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">Controls &amp; Filters</h5>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Add-rule menus, URL filters, resource type chips, and 1-Click Scope This Site.</p>
           </div>
         </div>
 
         <!-- Screenshot 3 -->
-        <div class="gallery-card" data-lightbox="assets/controlPanek.png" data-caption="Security Controls Modal &amp; Local Storage Governance">
-          <div class="gallery-thumb">
-            <img src="assets/controlPanek.png" alt="Security Controls Modal" loading="lazy">
+        <div class="gallery-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; cursor: zoom-in;" data-lightbox="assets/controlPanel.png" data-caption="Security Controls Modal &amp; Local Storage Governance">
+          <div class="gallery-thumb" style="aspect-ratio: 16/10; overflow: hidden; background-color: #020617;">
+            <img src="assets/controlPanel.png" alt="Security Controls Modal" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
           </div>
-          <div class="gallery-caption">
-            <h5>Security Controls</h5>
-            <p>Strict Scope Guard toggles, zero-export policy disclosures, and one-click data wipe.</p>
+          <div class="gallery-caption" style="padding: 1.25rem;">
+            <h5 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">Security Controls</h5>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Strict Scope Guard toggles, zero-export policy disclosures, and one-click data wipe.</p>
           </div>
         </div>
 
         <!-- Screenshot 4 -->
-        <div class="gallery-card" data-lightbox="assets/audit-log.png" data-caption="Local Audit Log Ring Buffer &amp; Security Compliance Events">
-          <div class="gallery-thumb">
-            <img src="assets/audit-log.png" alt="Local Audit Log Modal" loading="lazy">
+        <div class="gallery-card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; cursor: zoom-in;" data-lightbox="assets/audit-log.png" data-caption="Local Audit Log Ring Buffer &amp; Security Compliance Events">
+          <div class="gallery-thumb" style="aspect-ratio: 16/10; overflow: hidden; background-color: #020617;">
+            <img src="assets/audit-log.png" alt="Local Audit Log Modal" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
           </div>
-          <div class="gallery-caption">
-            <h5>Audit Log</h5>
-            <p>Metadata-only FIFO ring buffer recording up to 20 local security events.</p>
+          <div class="gallery-caption" style="padding: 1.25rem;">
+            <h5 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">Audit Log</h5>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Metadata-only FIFO ring buffer recording up to 20 local security events.</p>
           </div>
         </div>
 
       </div>
     </div>
   </section>
+
+  <!-- Global Command Palette Modal -->
+  <div id="cmdModal" class="cmd-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="cmd-card">
+      <div class="cmd-input-wrapper">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="cmdInput" class="cmd-input" placeholder="Search documentation, properties, recipes, and FAQs...">
+      </div>
+      <ul id="cmdResults" class="cmd-results"></ul>
+      <div class="cmd-footer">
+        <span>Press <kbd style="font-family: var(--font-mono); background: #162036; padding: 2px 5px; border-radius: 3px;">ESC</kbd> to exit</span>
+        <span>SafeHeader v0.1.3 Documentation</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Lightbox Modal -->
   <div id="lightboxModal" class="lightbox-modal" role="dialog" aria-modal="true" aria-hidden="true">
@@ -808,6 +1272,13 @@ Target URL: *://connect.facebook.net/*</pre>
     </div>
   </div>
 
+  <!-- Floating Quick Navigation & Back-to-Top -->
+  <div class="floating-quicknav">
+    <button id="backToTopBtn" class="back-to-top-btn" aria-label="Back to top of page">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
@@ -815,7 +1286,7 @@ Target URL: *://connect.facebook.net/*</pre>
         <div class="footer-brand">
           <h4>SafeHeader</h4>
           <p>
-            A 100% local, zero-export, security-hardened Chrome &amp; Firefox Manifest V3 extension for developers and security teams.
+            The 100% local, zero-export, security-hardened Chrome &amp; Firefox Manifest V3 extension for developers and security engineering teams.
           </p>
         </div>
         <div class="footer-links-group">
@@ -823,10 +1294,11 @@ Target URL: *://connect.facebook.net/*</pre>
             <h5>Documentation</h5>
             <ul>
               <li><a href="#overview">Overview</a></li>
+              <li><a href="#architecture">Architecture</a></li>
               <li><a href="#install">Installation</a></li>
               <li><a href="#properties">Properties &amp; Rules</a></li>
-              <li><a href="#security">Security &amp; Audit</a></li>
-              <li><a href="#cookbook">Cookbook</a></li>
+              <li><a href="#sandbox">Filter Sandbox</a></li>
+              <li><a href="#comparison">Comparison Matrix</a></li>
             </ul>
           </div>
           <div class="footer-col">
