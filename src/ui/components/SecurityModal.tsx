@@ -135,7 +135,7 @@ export function SecurityModal({
               </button>
             </div>
             <div className="info-banner-muted">
-              Append-only local security event log (capped at 200 entries). Secret header, cookie,
+              Append-only local security event log (capped at 20 entries). Secret header, cookie,
               and query parameter values are never recorded.
             </div>
             <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>

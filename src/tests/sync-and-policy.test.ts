@@ -109,7 +109,7 @@ describe('SyncHealth verification, quota truncation, policy clamping & audit log
     expect(errored.health.errorMessage).toContain('mismatch');
   });
 
-  it('caps local audit ring-buffer at 200 entries', async () => {
+  it('caps local audit ring-buffer at 20 entries', async () => {
     const localStore: Record<string, unknown> = {};
     (globalThis as unknown as { chrome: unknown }).chrome = {
       storage: {
@@ -124,12 +124,12 @@ describe('SyncHealth verification, quota truncation, policy clamping & audit log
       },
     };
 
-    for (let i = 0; i < 205; i++) {
+    for (let i = 0; i < 25; i++) {
       await appendAuditEvent('SYNC_OK', `Event ${i}`);
     }
     const log = await loadAuditLog();
-    expect(log).toHaveLength(200);
-    expect(log[0].detail).toBe('Event 204');
+    expect(log).toHaveLength(20);
+    expect(log[0].detail).toBe('Event 24');
   });
 
   it('ensures managed_schema.json defines items on every array schema node', () => {

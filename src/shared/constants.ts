@@ -10,7 +10,7 @@ export const EPHEMERAL_SECRETS_SESSION_KEY = 'ephemeralSecrets';
 export const MAX_IMPORT_BYTES = 512 * 1024; // 512 KB cap for pasted JSON
 export const MAX_PROFILES = 50;
 export const MAX_RULES_PER_SECTION = 200;
-export const MAX_AUDIT_ENTRIES = 200;
+export const MAX_AUDIT_ENTRIES = 20;
 
 export const PROFILE_COLORS = [
   '#2e7d32', // Green
