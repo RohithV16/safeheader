@@ -4,15 +4,15 @@ import { loadAuditLog } from '../../shared/audit-log';
 import type { AuditEvent, ManagedPolicy, SecuritySettings, SyncHealth } from '../../shared/types';
 
 interface SecurityModalProps {
-  security: SecuritySettings;
-  policy: ManagedPolicy;
-  syncHealth: SyncHealth | null;
-  ephemeralCount: number;
-  onChange: (next: SecuritySettings) => void;
-  onForceSync: () => Promise<void>;
-  onWipeEphemeral: () => Promise<void>;
-  onWipeAll: () => Promise<void>;
-  onClose: () => void;
+  readonly security: SecuritySettings;
+  readonly policy: ManagedPolicy;
+  readonly syncHealth: SyncHealth | null;
+  readonly ephemeralCount: number;
+  readonly onChange: (next: SecuritySettings) => void;
+  readonly onForceSync: () => Promise<void>;
+  readonly onWipeEphemeral: () => Promise<void>;
+  readonly onWipeAll: () => Promise<void>;
+  readonly onClose: () => void;
 }
 
 export function SecurityModal({
@@ -66,27 +66,29 @@ export function SecurityModal({
     }
   };
 
-  const baseTimeouts =
-    policy.maxAutoPauseMinutes !== null
-      ? [5, 10, 15, 30, 60, 120, policy.maxAutoPauseMinutes, 0]
-      : [15, 30, 60, 120, 0];
-  const allowedTimeoutOptions = Array.from(new Set(baseTimeouts))
-    .filter((min) => {
-      if (policy.maxAutoPauseMinutes === null) return true;
-      return min > 0 && min <= policy.maxAutoPauseMinutes;
-    })
-    .sort((a, b) => (a === 0 ? 1 : b === 0 ? -1 : a - b));
-
   const auditTypes = Array.from(new Set(auditEvents.map((e) => e.type)));
   const visibleAuditEvents =
     auditFilter === 'ALL' ? auditEvents : auditEvents.filter((e) => e.type === auditFilter);
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+    >
+      <dialog
+        open
+        className="modal-card"
+        aria-labelledby="security-modal-title"
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14 }}>
-            <ShieldCheck size={16} color="#2e7d32" />
+          <div id="security-modal-title" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14 }}>
+            <ShieldCheck size={16} color="var(--accent)" />
             Corporate Security Controls
           </div>
           <div className="tab-group">
@@ -167,6 +169,7 @@ export function SecurityModal({
               <input
                 type="checkbox"
                 className="rule-checkbox"
+                aria-label="Strict Scope Guard"
                 checked={security.requireScopeForSensitive}
                 disabled={policy.enforceScopeForSensitive}
                 onChange={(e) =>
@@ -185,7 +188,7 @@ export function SecurityModal({
                 <div className="security-desc">
                   Hard-blocks sensitive headers (<code>Authorization</code>, <code>Cookie</code>,{' '}
                   <code>*token*</code>, <code>*key*</code>) and cookies unless pinned to a concrete
-                  domain URL filter or Tab Lock.
+                  domain URL filter.
                 </div>
               </div>
             </label>
@@ -194,6 +197,7 @@ export function SecurityModal({
               <input
                 type="checkbox"
                 className="rule-checkbox"
+                aria-label="Mask Secret Values"
                 checked={security.maskSecrets}
                 disabled={policy.enforceMaskSecrets}
                 onChange={(e) =>
@@ -220,6 +224,7 @@ export function SecurityModal({
               <input
                 type="checkbox"
                 className="rule-checkbox"
+                aria-label="Presentation Mode"
                 checked={security.presentationMode}
                 onChange={(e) =>
                   onChange({ ...security, presentationMode: e.target.checked })
@@ -234,35 +239,6 @@ export function SecurityModal({
                 </div>
               </div>
             </label>
-
-            <div className="security-option" style={{ justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  Auto-Pause Idle Timeout
-                  {policy.maxAutoPauseMinutes !== null && (
-                    <span className="policy-tag">
-                      <Lock size={10} /> Max {policy.maxAutoPauseMinutes}m
-                    </span>
-                  )}
-                </div>
-                <div className="security-desc">
-                  Measures elapsed time since last edit/resume via <code>chrome.alarms</code>.
-                </div>
-              </div>
-              <select
-                className="field-select"
-                value={security.autoPauseMinutes}
-                onChange={(e) =>
-                  onChange({ ...security, autoPauseMinutes: Number(e.target.value) })
-                }
-              >
-                {allowedTimeoutOptions.map((min) => (
-                  <option key={min} value={min}>
-                    {min === 0 ? 'Off' : `${min} min`}
-                  </option>
-                ))}
-              </select>
-            </div>
 
             {syncHealth && (
               <div className="sync-health-card">
@@ -354,7 +330,7 @@ export function SecurityModal({
             </button>
           </div>
         )}
-      </div>
+      </dialog>
     </div>
   );
 }

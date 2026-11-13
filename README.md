@@ -96,10 +96,8 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 
 - **100% Local Storage & Zero Export:** Profiles and rules stay in `chrome.storage.local`. Profile export, `.json` download, and bulk clipboard export are intentionally disabled. (Local **Import JSON** is supported for migrating existing ModHeader profiles.)
 - **Zero Outbound Network Access:** Strict MV3 CSP (`connect-src 'none'`) ensures extension pages cannot make network requests or send telemetry.
-- **Strict Scope Guard (On by Default):** Sensitive headers (`Authorization`, `Cookie`, `Set-Cookie`, `*token*`, `*secret*`, `*key*`, `*auth*`), all **Add cookies** rules, and sensitive query parameters are blocked from running globally (`*` or `*://*/*`). Add a domain URL filter or enable **Tab Lock** to activate them.
-- **Tab Lock:** Pins a profile's rules to a single browser tab (`tabIds`). Add a domain URL filter as well if you want to prevent redirects on that tab from receiving sensitive headers.
+- **Strict Scope Guard (On by Default):** Sensitive headers (`Authorization`, `Cookie`, `Set-Cookie`, `*token*`, `*secret*`, `*key*`, `*auth*`), all **Add cookies** rules, and sensitive query parameters are blocked from running globally (`*` or `*://*/*`). Add a domain URL filter to activate them.
 - **Secret Masking:** Sensitive header values and all cookie values are masked (`••••••`) in the UI with a per-row eye toggle to reveal when needed.
-- **Auto-Pause Idle Timer:** Automatically pauses all rule modifications after inactivity (default: 60 minutes).
 - **Local Audit Log & One-Click Wipe:** View metadata-only rule/security events or wipe all local storage and active DNR rules from the **Security Controls** shield icon.
 
 ---
@@ -114,9 +112,8 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 
 ---
 
-## Keyboard Shortcuts & Power Features
+## Surfaces & Power Features
 
-- **`Cmd/Ctrl + F`:** Focus the rule search bar to filter rules across sections.
 - **Side Panel & Full Options Tab:** Open from the popup or Chrome's Side Panel for more space when editing complex profiles.
 - **1-Click Scope This Site:** Automatically adds `*://<active-tab-host>/*` as an Include URL filter on the active profile.
 
@@ -125,12 +122,10 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 ## Troubleshooting
 
 - **My header or cookie isn't showing up on requests:**
-  1. Check if **Strict Scope Guard** is blocking it because there is no domain URL filter or **Tab Lock** enabled — look for a warning banner in the extension UI.
+  1. Check if **Strict Scope Guard** is blocking it because there is no domain URL filter enabled — look for a warning banner in the extension UI.
   2. Check that the extension is **not paused** (pause/play button in the top bar) and the rule's checkbox is checked.
   3. Check **Filter -> Resource Types**: if any chips are selected (e.g. `XHR / Fetch`), `Document` page loads won't match unless `Document` is also selected (or no chips are selected).
   4. Note that Chrome DevTools' Network tab can sometimes display cached or pre-DNR headers; verify against your server logs or the dev `echo-server` utility if needed.
-- **My rules stopped working after an hour:**
-  - The **Auto-Pause Idle Timer** paused the extension after inactivity. Click **Resume** in the top bar, or adjust the timeout in **Security Controls** (shield icon).
 
 ---
 
@@ -150,14 +145,13 @@ End users do **not** run this. It is an optional local test server for developer
 ```bash
 npm run echo-server
 ```
-Visit `http://127.0.0.1:4321` in Chrome, add a URL filter `*://127.0.0.1:*/*` (or enable **Tab Lock**), and toggle rules in the extension.
+Visit `http://127.0.0.1:4321` in Chrome, add a URL filter `*://127.0.0.1:*/*`, and toggle rules in the extension.
 
 ### Chrome Web Store Permission Justifications
 - **Single Purpose:** Modify HTTP request/response headers, request cookies, query parameters, and redirects/blocks locally in Chrome using declarative network rules, with zero data export or telemetry.
 - **`declarativeNetRequestWithHostAccess`:** Compiles user-defined rules into Chrome's native `declarativeNetRequest` dynamic and session rule engine without intercepting response bodies or running background JS listeners on every request.
 - **`host_permissions` (`<all_urls>`):** Required by Chromium's `declarativeNetRequest` `modifyHeaders` specification so users can apply rules to arbitrary internal, staging, localhost, or production URLs they configure.
-- **`activeTab`:** Replaces the broader `"tabs"` permission so the toolbar can inspect the active tab's URL/ID for **1-Click Scope This Site** and **Tab Lock** without accessing background tab history.
+- **`activeTab`:** Replaces the broader `"tabs"` permission so the toolbar can inspect the active tab's URL/ID for **1-Click Scope This Site** without accessing background tab history.
 - **`storage`:** Stores profiles, rules, settings, local backup snapshots, and metadata-only audit events exclusively in `chrome.storage.local` (plus `chrome.storage.session` / `chrome.storage.managed` policy clamping). Zero `chrome.storage.sync`.
-- **`alarms`:** Drives the Auto-Pause idle timer (`chrome.alarms`) in the MV3 service worker.
 - **`sidePanel`:** Provides the persistent Side Panel workspace surface alongside the toolbar popup.
 - **Data Handling & Privacy Disclosure:** Zero user data collection, zero analytics, zero third-party network requests (`connect-src 'none'`), and zero remotely hosted code.

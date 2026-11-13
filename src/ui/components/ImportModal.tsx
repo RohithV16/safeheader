@@ -7,9 +7,9 @@ import {
 import type { Profile } from '../../shared/types';
 
 interface ImportModalProps {
-  existingCount: number;
-  onClose: () => void;
-  onImport: (imported: Profile[]) => void;
+  readonly existingCount: number;
+  readonly onClose: () => void;
+  readonly onImport: (imported: Profile[]) => void;
 }
 
 export function ImportModal({
@@ -70,9 +70,22 @@ export function ImportModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+    >
+      <dialog
+        open
+        className="modal-card"
+        aria-labelledby="import-modal-title"
+      >
+        <div id="import-modal-title" style={{ fontWeight: 700, fontSize: 14 }}>
           Import Profiles (Local Security Gate)
         </div>
 
@@ -99,7 +112,7 @@ export function ImportModal({
               Profiles ({inspection.report.riskyProfileTitles.join(', ')}) contain sensitive
               headers/cookies ({inspection.report.unscopedSensitiveRuleNames.join(', ')}) without a
               concrete domain filter. They will stay <strong>blocked</strong> by Strict Scope Guard
-              until you add a domain filter or Tab Lock.
+              until you add a domain filter.
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, cursor: 'pointer' }}>
               <input
@@ -108,7 +121,7 @@ export function ImportModal({
                 checked={acknowledgedRisk}
                 onChange={(e) => setAcknowledgedRisk(e.target.checked)}
               />
-              I understand and want to import these profiles locally
+              <span>I understand and want to import these profiles locally</span>
             </label>
           </div>
         )}
@@ -126,7 +139,7 @@ export function ImportModal({
             Import Profiles
           </button>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }

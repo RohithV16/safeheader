@@ -1,20 +1,23 @@
-import { AlertTriangle, Eye, EyeOff, Lock, ShieldAlert, X, Zap } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, ShieldAlert, Zap } from 'lucide-react';
 import type { CookieRule } from '../../shared/types';
 import { getCookieRuleWarning } from '../../shared/validators';
 import { useAutoHideReveal } from '../hooks/useAutoHideReveal';
+import { RowActions } from './RowActions';
 
 interface CookieRowProps {
-  rule: CookieRule;
-  hideComment: boolean;
-  maskSecrets: boolean;
-  presentationMode: boolean;
-  isScoped: boolean;
-  requireScopeForSensitive: boolean;
-  readOnly?: boolean;
-  onChange: (next: CookieRule) => void;
-  onDelete: () => void;
-  onLockTab: () => void;
-  onAddCurrentSiteFilter: () => void;
+  readonly rule: CookieRule;
+  readonly hideComment: boolean;
+  readonly maskSecrets: boolean;
+  readonly presentationMode: boolean;
+  readonly isScoped: boolean;
+  readonly requireScopeForSensitive: boolean;
+  readonly readOnly?: boolean;
+  readonly onMoveUp?: () => void;
+  readonly onMoveDown?: () => void;
+  readonly canMoveUp?: boolean;
+  readonly canMoveDown?: boolean;
+  readonly onChange: (next: CookieRule) => void;
+  readonly onDelete: () => void;
 }
 
 export function CookieRow({
@@ -25,10 +28,12 @@ export function CookieRow({
   isScoped,
   requireScopeForSensitive,
   readOnly = false,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
   onChange,
   onDelete,
-  onLockTab,
-  onAddCurrentSiteFilter,
 }: CookieRowProps) {
   const [revealed, setRevealed] = useAutoHideReveal(presentationMode);
 
@@ -118,40 +123,23 @@ export function CookieRow({
         )}
 
         {!readOnly && (
-          <button
-            type="button"
-            className="row-del-btn"
-            title="Delete cookie rule"
-            onClick={onDelete}
-          >
-            <X size={14} />
-          </button>
+          <RowActions
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            canMoveUp={canMoveUp}
+            canMoveDown={canMoveDown}
+            onDelete={onDelete}
+            deleteTitle="Delete cookie rule"
+            deleteAriaLabel="Delete cookie rule"
+          />
         )}
       </div>
 
       {isBlockedByGuard && (
         <div className="remediation-strip">
           <span className="remediation-text">
-            <ShieldAlert size={12} /> Blocked globally (cookie needs domain scope)
+            <ShieldAlert size={12} /> Blocked globally by Strict Scope Guard
           </span>
-          {!readOnly && (
-            <span className="remediation-actions">
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onAddCurrentSiteFilter}
-              >
-                + Add URL filter
-              </button>
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onLockTab}
-              >
-                <Lock size={10} /> Lock to tab
-              </button>
-            </span>
-          )}
         </div>
       )}
     </div>

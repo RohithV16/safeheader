@@ -1,15 +1,14 @@
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 interface RuleSectionProps {
-  title: string;
-  activeCount: number;
-  totalCount: number;
-  defaultOpen?: boolean;
-  forceOpen?: boolean;
-  readOnly?: boolean;
-  onAdd: () => void;
-  children: ReactNode;
+  readonly title: string;
+  readonly activeCount: number;
+  readonly totalCount: number;
+  readonly defaultOpen?: boolean;
+  readonly readOnly?: boolean;
+  readonly onAdd: () => void;
+  readonly children: ReactNode;
 }
 
 export function RuleSection({
@@ -17,16 +16,11 @@ export function RuleSection({
   activeCount,
   totalCount,
   defaultOpen = true,
-  forceOpen = false,
   readOnly = false,
   onAdd,
   children,
 }: RuleSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
-
-  useEffect(() => {
-    if (forceOpen) setOpen(true);
-  }, [forceOpen]);
 
   return (
     <section className="rule-section">

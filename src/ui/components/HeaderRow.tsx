@@ -1,22 +1,25 @@
-import { AlertTriangle, Eye, EyeOff, Lock, ShieldAlert, X, Zap } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, ShieldAlert, Zap } from 'lucide-react';
 import type { HeaderRule } from '../../shared/types';
 import { getHeaderRuleWarning, isSensitiveHeaderName } from '../../shared/validators';
 import { useAutoHideReveal } from '../hooks/useAutoHideReveal';
+import { RowActions } from './RowActions';
 
 interface HeaderRowProps {
-  rule: HeaderRule;
-  target: 'request' | 'response';
-  hideComment: boolean;
-  maskSecrets: boolean;
-  presentationMode: boolean;
-  isScoped: boolean;
-  requireScopeForSensitive: boolean;
-  readOnly?: boolean;
-  datalistId: string;
-  onChange: (next: HeaderRule) => void;
-  onDelete: () => void;
-  onLockTab: () => void;
-  onAddCurrentSiteFilter: () => void;
+  readonly rule: HeaderRule;
+  readonly target: 'request' | 'response';
+  readonly hideComment: boolean;
+  readonly maskSecrets: boolean;
+  readonly presentationMode: boolean;
+  readonly isScoped: boolean;
+  readonly requireScopeForSensitive: boolean;
+  readonly readOnly?: boolean;
+  readonly datalistId: string;
+  readonly onMoveUp?: () => void;
+  readonly onMoveDown?: () => void;
+  readonly canMoveUp?: boolean;
+  readonly canMoveDown?: boolean;
+  readonly onChange: (next: HeaderRule) => void;
+  readonly onDelete: () => void;
 }
 
 export function HeaderRow({
@@ -29,10 +32,12 @@ export function HeaderRow({
   requireScopeForSensitive,
   readOnly = false,
   datalistId,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
   onChange,
   onDelete,
-  onLockTab,
-  onAddCurrentSiteFilter,
 }: HeaderRowProps) {
   const [revealed, setRevealed] = useAutoHideReveal(presentationMode);
 
@@ -126,40 +131,23 @@ export function HeaderRow({
         )}
 
         {!readOnly && (
-          <button
-            type="button"
-            className="row-del-btn"
-            title="Delete row"
-            onClick={onDelete}
-          >
-            <X size={14} />
-          </button>
+          <RowActions
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            canMoveUp={canMoveUp}
+            canMoveDown={canMoveDown}
+            onDelete={onDelete}
+            deleteTitle="Delete row"
+            deleteAriaLabel="Delete header rule"
+          />
         )}
       </div>
 
       {isBlockedByGuard && (
         <div className="remediation-strip">
           <span className="remediation-text">
-            <ShieldAlert size={12} /> Blocked globally (sensitive header needs scope)
+            <ShieldAlert size={12} /> Blocked globally by Strict Scope Guard
           </span>
-          {!readOnly && (
-            <span className="remediation-actions">
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onAddCurrentSiteFilter}
-              >
-                + Add URL filter
-              </button>
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onLockTab}
-              >
-                <Lock size={10} /> Lock to tab
-              </button>
-            </span>
-          )}
         </div>
       )}
     </div>

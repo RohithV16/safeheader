@@ -1,20 +1,49 @@
-import { AlertTriangle, Eye, EyeOff, Lock, ShieldAlert, X, Zap } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, ShieldAlert, Zap } from 'lucide-react';
 import type { QueryParamRule } from '../../shared/types';
 import { getQueryParamWarning, isSensitiveHeaderName } from '../../shared/validators';
 import { useAutoHideReveal } from '../hooks/useAutoHideReveal';
+import { RowActions } from './RowActions';
 
 interface QueryParamRowProps {
-  rule: QueryParamRule;
-  hideComment: boolean;
-  maskSecrets: boolean;
-  presentationMode: boolean;
-  isScoped: boolean;
-  requireScopeForSensitive: boolean;
-  readOnly?: boolean;
-  onChange: (next: QueryParamRule) => void;
-  onDelete: () => void;
-  onLockTab: () => void;
-  onAddCurrentSiteFilter: () => void;
+  readonly rule: QueryParamRule;
+  readonly hideComment: boolean;
+  readonly maskSecrets: boolean;
+  readonly presentationMode: boolean;
+  readonly isScoped: boolean;
+  readonly requireScopeForSensitive: boolean;
+  readonly readOnly?: boolean;
+  readonly onMoveUp?: () => void;
+  readonly onMoveDown?: () => void;
+  readonly canMoveUp?: boolean;
+  readonly canMoveDown?: boolean;
+  readonly onChange: (next: QueryParamRule) => void;
+  readonly onDelete: () => void;
+}
+
+function resolveValuePlaceholder(
+  isRemove: boolean,
+  ephemeral?: boolean,
+  value?: string
+): string {
+  if (isRemove) return '(removed)';
+  if (ephemeral && !value) return 'RAM session value (cleared)';
+  return 'Value';
+}
+
+function checkBlockedByGuard(
+  rule: QueryParamRule,
+  sensitive: boolean,
+  requireScopeForSensitive: boolean,
+  isScoped: boolean
+): boolean {
+  return (
+    rule.enabled &&
+    rule.name.trim().length > 0 &&
+    rule.operation !== 'remove' &&
+    sensitive &&
+    requireScopeForSensitive &&
+    !isScoped
+  );
 }
 
 export function QueryParamRow({
@@ -25,25 +54,27 @@ export function QueryParamRow({
   isScoped,
   requireScopeForSensitive,
   readOnly = false,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
   onChange,
   onDelete,
-  onLockTab,
-  onAddCurrentSiteFilter,
 }: QueryParamRowProps) {
   const [revealed, setRevealed] = useAutoHideReveal(presentationMode);
 
   const warning = getQueryParamWarning(rule);
   const sensitive = isSensitiveHeaderName(rule.name);
   const isSecret = (maskSecrets || presentationMode) && sensitive && rule.operation !== 'remove';
-  const isBlockedByGuard =
-    rule.enabled &&
-    rule.name.trim().length > 0 &&
-    rule.operation !== 'remove' &&
-    sensitive &&
-    requireScopeForSensitive &&
-    !isScoped;
+  const isBlockedByGuard = checkBlockedByGuard(
+    rule,
+    sensitive,
+    requireScopeForSensitive,
+    isScoped
+  );
 
   const isRemove = rule.operation === 'remove';
+  const placeholder = resolveValuePlaceholder(isRemove, rule.ephemeral, rule.value);
 
   return (
     <div className={`rule-row-wrap ${isBlockedByGuard ? 'row-blocked' : ''}`}>
@@ -83,13 +114,7 @@ export function QueryParamRow({
           autoComplete="off"
           spellCheck={false}
           className="field-input field-value"
-          placeholder={
-            isRemove
-              ? '(removed)'
-              : rule.ephemeral && !rule.value
-                ? 'RAM session value (cleared)'
-                : 'Value'
-          }
+          placeholder={placeholder}
           disabled={readOnly || isRemove}
           value={isRemove ? '' : rule.value}
           onChange={(e) => onChange({ ...rule, value: e.target.value })}
@@ -139,40 +164,23 @@ export function QueryParamRow({
         )}
 
         {!readOnly && (
-          <button
-            type="button"
-            className="row-del-btn"
-            title="Delete query parameter rule"
-            onClick={onDelete}
-          >
-            <X size={14} />
-          </button>
+          <RowActions
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            canMoveUp={canMoveUp}
+            canMoveDown={canMoveDown}
+            onDelete={onDelete}
+            deleteTitle="Delete query parameter rule"
+            deleteAriaLabel="Delete query parameter rule"
+          />
         )}
       </div>
 
       {isBlockedByGuard && (
         <div className="remediation-strip">
           <span className="remediation-text">
-            <ShieldAlert size={12} /> Blocked globally (sensitive param needs scope)
+            <ShieldAlert size={12} /> Blocked globally by Strict Scope Guard
           </span>
-          {!readOnly && (
-            <span className="remediation-actions">
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onAddCurrentSiteFilter}
-              >
-                + Add URL filter
-              </button>
-              <button
-                type="button"
-                className="remediation-btn"
-                onClick={onLockTab}
-              >
-                <Lock size={10} /> Lock to tab
-              </button>
-            </span>
-          )}
         </div>
       )}
     </div>

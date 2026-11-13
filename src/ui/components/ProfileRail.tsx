@@ -2,13 +2,20 @@ import { ArrowDown, ArrowUp, Plus } from 'lucide-react';
 import type { Profile } from '../../shared/types';
 
 interface ProfileRailProps {
-  profiles: Profile[];
-  activeProfileId: string;
-  multiProfileMode: boolean;
-  isPaused: boolean;
-  onSelect: (id: string) => void;
-  onAdd: () => void;
-  onMoveProfile: (id: string, direction: 'up' | 'down') => void;
+  readonly profiles: Profile[];
+  readonly activeProfileId: string;
+  readonly multiProfileMode: boolean;
+  readonly isPaused: boolean;
+  readonly onSelect: (id: string) => void;
+  readonly onAdd: () => void;
+  readonly onMoveProfile: (id: string, direction: 'up' | 'down') => void;
+}
+
+function getProfileTooltip(profile: Profile, index: number, multiProfileMode: boolean): string {
+  if (multiProfileMode && profile.enabled) {
+    return `${profile.title} [Priority #${index + 1}]`;
+  }
+  return profile.title;
 }
 
 export function ProfileRail({
@@ -34,6 +41,7 @@ export function ProfileRail({
         const label = (profile.shortTitle || String(index + 1)).slice(0, 3);
         const showEnabledDot =
           !isPaused && (multiProfileMode ? profile.enabled : isActive && profile.enabled);
+        const tooltip = getProfileTooltip(profile, index, multiProfileMode);
 
         return (
           <button
@@ -43,9 +51,7 @@ export function ProfileRail({
               !profile.enabled ? 'disabled-profile' : ''
             }`}
             style={{ backgroundColor: profile.color }}
-            title={`${profile.title}${multiProfileMode && profile.enabled ? ` [Priority #${index + 1}]` : ''}${
-              profile.tabLockId ? ` (Locked to Tab #${profile.tabLockId})` : ''
-            }`}
+            title={tooltip}
             onClick={() => onSelect(profile.id)}
           >
             {label}

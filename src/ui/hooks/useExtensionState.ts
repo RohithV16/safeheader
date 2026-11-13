@@ -18,6 +18,7 @@ import { applyManagedPolicyToState, createEmptyManagedPolicy, loadManagedPolicy 
 import {
   createDefaultProfile,
   createDefaultState,
+  findNextAvailableProfileIndex,
   generateId,
   loadState,
   normalizeState,
@@ -75,6 +76,34 @@ export function useExtensionState() {
         });
     }
 
+    const handleSessionChange = (changes: Record<string, chrome.storage.StorageChange>) => {
+      if (changes[EPHEMERAL_SECRETS_SESSION_KEY]) {
+        const raw = changes[EPHEMERAL_SECRETS_SESSION_KEY].newValue;
+        const nextSecrets =
+          raw && typeof raw === 'object' && !Array.isArray(raw)
+            ? (raw as Record<string, string>)
+            : {};
+        ephemeralRef.current = nextSecrets;
+        setState((prev) =>
+          applyManagedPolicyToState(
+            hydrateEphemeralSecrets(stripEphemeralValues(prev), nextSecrets),
+            policyRef.current
+          )
+        );
+      }
+      if (changes[WARNINGS_SESSION_KEY]) {
+        const next = changes[WARNINGS_SESSION_KEY].newValue;
+        setWarnings(Array.isArray(next) ? (next as CompileWarning[]) : []);
+      }
+      if (changes[SYNC_HEALTH_SESSION_KEY]) {
+        setSyncHealth((changes[SYNC_HEALTH_SESSION_KEY].newValue as SyncHealth) ?? null);
+      }
+      if (changes[RECOVERY_NOTICE_SESSION_KEY]) {
+        const v = changes[RECOVERY_NOTICE_SESSION_KEY].newValue;
+        setRecoveryNotice(typeof v === 'string' ? v : null);
+      }
+    };
+
     const onStorageChange = (
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: string
@@ -83,6 +112,7 @@ export function useExtensionState() {
         const normalized = normalizeState(changes[STORAGE_KEY].newValue);
         const hydrated = hydrateEphemeralSecrets(normalized, ephemeralRef.current);
         setState(applyManagedPolicyToState(hydrated, policyRef.current));
+        return;
       }
       if (areaName === 'managed') {
         void loadManagedPolicy().then((nextPolicy) => {
@@ -90,33 +120,10 @@ export function useExtensionState() {
           setPolicy(nextPolicy);
           setState((prev) => applyManagedPolicyToState(prev, nextPolicy));
         });
+        return;
       }
       if (areaName === 'session') {
-        if (changes[EPHEMERAL_SECRETS_SESSION_KEY]) {
-          const raw = changes[EPHEMERAL_SECRETS_SESSION_KEY].newValue;
-          const nextSecrets =
-            raw && typeof raw === 'object' && !Array.isArray(raw)
-              ? (raw as Record<string, string>)
-              : {};
-          ephemeralRef.current = nextSecrets;
-          setState((prev) =>
-            applyManagedPolicyToState(
-              hydrateEphemeralSecrets(stripEphemeralValues(prev), nextSecrets),
-              policyRef.current
-            )
-          );
-        }
-        if (changes[WARNINGS_SESSION_KEY]) {
-          const next = changes[WARNINGS_SESSION_KEY].newValue;
-          setWarnings(Array.isArray(next) ? (next as CompileWarning[]) : []);
-        }
-        if (changes[SYNC_HEALTH_SESSION_KEY]) {
-          setSyncHealth((changes[SYNC_HEALTH_SESSION_KEY].newValue as SyncHealth) ?? null);
-        }
-        if (changes[RECOVERY_NOTICE_SESSION_KEY]) {
-          const v = changes[RECOVERY_NOTICE_SESSION_KEY].newValue;
-          setRecoveryNotice(typeof v === 'string' ? v : null);
-        }
+        handleSessionChange(changes);
       }
     };
 
@@ -135,7 +142,7 @@ export function useExtensionState() {
         void chrome.runtime
           .sendMessage({ type: 'SET_STATE', state: next })
           .then((res: { ok?: boolean; error?: string } | undefined) => {
-            if (res && res.ok === false) {
+            if (res?.ok === false) {
               setSaveError(res.error ?? 'Failed to save changes.');
               setState(prev);
             }
@@ -190,8 +197,11 @@ export function useExtensionState() {
 
   const addProfile = useCallback(() => {
     commit((prev) => {
-      const nextIndex = prev.profiles.length + 1;
-      const newProfile = createDefaultProfile(nextIndex);
+      const nextIndex = findNextAvailableProfileIndex(prev.profiles);
+      const newProfile: Profile = {
+        ...createDefaultProfile(nextIndex),
+        order: prev.profiles.length,
+      };
       return {
         ...prev,
         activeProfileId: newProfile.id,

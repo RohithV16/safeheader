@@ -1,6 +1,5 @@
 import {
   Copy,
-  Lock,
   MessageSquare,
   MoreVertical,
   PanelRight,
@@ -11,7 +10,6 @@ import {
   ShieldCheck,
   SunMoon,
   Trash2,
-  Unlock,
   Upload,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -19,27 +17,36 @@ import { PROFILE_COLORS } from '../../shared/constants';
 import type { Profile, ThemeMode } from '../../shared/types';
 
 interface TopBarProps {
-  profile: Profile;
-  isPaused: boolean;
-  multiProfileMode: boolean;
-  theme: ThemeMode;
-  surface: 'popup' | 'sidepanel' | 'options';
-  onUpdateProfile: (updater: (p: Profile) => Profile) => void;
-  onTogglePause: () => void;
-  onToggleTabLock: () => void;
-  onAddRule: (
+  readonly profile: Profile;
+  readonly isPaused: boolean;
+  readonly multiProfileMode: boolean;
+  readonly theme: ThemeMode;
+  readonly surface: 'popup' | 'sidepanel' | 'options';
+  readonly onUpdateProfile: (updater: (p: Profile) => Profile) => void;
+  readonly onTogglePause: () => void;
+  readonly onAddRule: (
     kind: 'requestHeader' | 'responseHeader' | 'cookie' | 'queryParam' | 'redirect'
   ) => void;
-  onCloneProfile: () => void;
-  onDeleteProfile: () => void;
-  onOpenImport: () => void;
-  onOpenSecurity: () => void;
-  compactDensity: boolean;
-  onToggleCompactDensity: () => void;
-  onToggleMultiProfile: () => void;
-  onCycleTheme: () => void;
-  onOpenSidePanel: () => void;
-  onOpenOptions: () => void;
+  readonly onCloneProfile: () => void;
+  readonly onDeleteProfile: () => void;
+  readonly onOpenImport: () => void;
+  readonly onOpenSecurity: () => void;
+  readonly compactDensity: boolean;
+  readonly onToggleCompactDensity: () => void;
+  readonly onToggleMultiProfile: () => void;
+  readonly onCycleTheme: () => void;
+  readonly onOpenSidePanel: () => void;
+  readonly onOpenOptions: () => void;
+}
+
+function resolveAppBarColor(
+  isPaused: boolean,
+  isManaged?: boolean,
+  color?: string
+): string {
+  if (isPaused) return '#546e7a';
+  if (isManaged) return '#1565c0';
+  return color || '#2e7d32';
 }
 
 export function TopBar({
@@ -50,7 +57,6 @@ export function TopBar({
   surface,
   onUpdateProfile,
   onTogglePause,
-  onToggleTabLock,
   onAddRule,
   onCloneProfile,
   onDeleteProfile,
@@ -94,7 +100,7 @@ export function TopBar({
     };
   }, []);
 
-  const appBarColor = isPaused ? '#546e7a' : profile.color || '#2e7d32';
+  const appBarColor = resolveAppBarColor(isPaused, profile.isManaged, profile.color);
   const readOnly = Boolean(profile.isManaged);
 
   return (
@@ -111,7 +117,7 @@ export function TopBar({
             setShowMoreMenu(false);
           }}
         >
-          {profile.shortTitle || '1'}
+          {profile.shortTitle || String(profile.order + 1)}
         </button>
 
         <input
@@ -130,10 +136,11 @@ export function TopBar({
             style={{
               fontSize: 10.5,
               fontWeight: 700,
-              padding: '2px 6px',
+              padding: '2px 8px',
               borderRadius: 999,
-              background: 'rgba(255,255,255,0.22)',
-              color: '#fff',
+              background: '#e8f0fe',
+              color: '#174ea6',
+              border: '1px solid #1a73e8',
             }}
           >
             POLICY
@@ -160,7 +167,7 @@ export function TopBar({
                 onUpdateProfile((p) => ({ ...p, enabled: e.target.checked }))
               }
             />
-            Enabled
+            <span>Enabled</span>
           </label>
         )}
       </div>
@@ -168,12 +175,13 @@ export function TopBar({
       {showBadgeEdit && !readOnly && (
         <div className="badge-popover">
           <label style={{ fontSize: 11, fontWeight: 600 }}>
-            Badge Text (1–3 chars)
+            <span>Badge Text (1–3 chars)</span>
             <input
               type="text"
               className="field-input"
               style={{ width: '100%', marginTop: 4 }}
               maxLength={3}
+              placeholder={String(profile.order + 1)}
               value={profile.shortTitle}
               onChange={(e) =>
                 onUpdateProfile((p) => ({
@@ -281,21 +289,6 @@ export function TopBar({
         >
           {isPaused ? <Play size={17} /> : <Pause size={17} />}
         </button>
-
-        {!readOnly && (
-          <button
-            type="button"
-            className={`appbar-icon-btn ${profile.tabLockId !== null ? 'active-state' : ''}`}
-            title={
-              profile.tabLockId !== null
-                ? `Locked to Tab #${profile.tabLockId} (click to unlock)`
-                : 'Lock this profile to current tab'
-            }
-            onClick={onToggleTabLock}
-          >
-            {profile.tabLockId !== null ? <Lock size={16} /> : <Unlock size={16} />}
-          </button>
-        )}
 
         <button
           type="button"

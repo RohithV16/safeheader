@@ -1,36 +1,41 @@
-import { AlertTriangle, ArrowRight, Lock, ShieldAlert, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ShieldAlert } from 'lucide-react';
 import type { RedirectRule } from '../../shared/types';
 import { getRedirectRuleWarning, isOverlyBroadUrlPattern } from '../../shared/validators';
+import { RowActions } from './RowActions';
 
 interface RedirectRowProps {
-  rule: RedirectRule;
-  hideComment: boolean;
-  tabLocked: boolean;
-  requireScopeForSensitive: boolean;
-  readOnly?: boolean;
-  currentTabOriginPattern: string | null;
-  onChange: (next: RedirectRule) => void;
-  onDelete: () => void;
-  onLockTab: () => void;
+  readonly rule: RedirectRule;
+  readonly hideComment: boolean;
+  readonly requireScopeForSensitive: boolean;
+  readonly readOnly?: boolean;
+  readonly currentTabOriginPattern: string | null;
+  readonly onMoveUp?: () => void;
+  readonly onMoveDown?: () => void;
+  readonly canMoveUp?: boolean;
+  readonly canMoveDown?: boolean;
+  readonly onChange: (next: RedirectRule) => void;
+  readonly onDelete: () => void;
 }
 
 export function RedirectRow({
   rule,
   hideComment,
-  tabLocked,
   requireScopeForSensitive,
   readOnly = false,
   currentTabOriginPattern,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
   onChange,
   onDelete,
-  onLockTab,
 }: RedirectRowProps) {
   const normalizedRule: RedirectRule = {
     ...rule,
     mode: 'url',
     matchType: 'wildcard',
   };
-  const enforceScope = requireScopeForSensitive && !tabLocked;
+  const enforceScope = requireScopeForSensitive;
   const warning = getRedirectRuleWarning(normalizedRule, enforceScope);
 
   const isBroadBlocked =
@@ -89,21 +94,22 @@ export function RedirectRow({
         )}
 
         {!readOnly && (
-          <button
-            type="button"
-            className="row-del-btn"
-            title="Delete redirect rule"
-            onClick={onDelete}
-          >
-            <X size={14} />
-          </button>
+          <RowActions
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            canMoveUp={canMoveUp}
+            canMoveDown={canMoveDown}
+            onDelete={onDelete}
+            deleteTitle="Delete redirect rule"
+            deleteAriaLabel="Delete redirect rule"
+          />
         )}
       </div>
 
       {isBroadBlocked && (
         <div className="remediation-strip">
           <span className="remediation-text">
-            <ShieldAlert size={12} /> From URL needs a concrete domain or Tab Lock
+            <ShieldAlert size={12} /> From URL needs a concrete domain filter
           </span>
           {!readOnly && (
             <span className="remediation-actions">
@@ -121,9 +127,6 @@ export function RedirectRow({
                   Use current site
                 </button>
               )}
-              <button type="button" className="remediation-btn" onClick={onLockTab}>
-                <Lock size={10} /> Lock to tab
-              </button>
             </span>
           )}
         </div>
