@@ -72,7 +72,8 @@ jobs:
           git add package.json package-lock.json public/manifest.json public/manifest.firefox.json
           git commit -m "chore: release ${{ steps.bump.outputs.tag }} [skip ci]"
           git tag -f "${{ steps.bump.outputs.tag }}"
-          git push origin "HEAD:${{ github.ref_name }}" --tags
+          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin "refs/tags/${{ steps.bump.outputs.tag }}" --force
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
