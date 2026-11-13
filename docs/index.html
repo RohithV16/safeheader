@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeHeader — Local-Only HTTP Header &amp; Traffic Engine</title>
+  <meta name="description" content="A hardened, 100% local Chrome &amp; Firefox extension to modify HTTP headers, request cookies, query parameters, and redirects with zero data export.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#overview" class="brand">
+        <div class="brand-icon">SH</div>
+        <span>SafeHeader</span>
+        <span class="brand-tag" id="release-badge">Latest</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#overview" class="nav-link">Overview</a></li>
+          <li><a href="#installation" class="nav-link">Installation</a></li>
+          <li><a href="#usage" class="nav-link">How to Use</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#installation" class="btn btn-primary btn-sm">Download</a>
+        <a href="https://github.com/RohithV16/safeheader" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 1. OVERVIEW SECTION -->
+  <section id="overview" class="hero-section">
+    <div class="container">
+      <div class="hero-pill">Corporate Security Edition &bull; Chrome &amp; Firefox MV3</div>
+      <h1 class="hero-title">
+        The 100% Local, Zero-Export <span class="gradient-text">HTTP Header &amp; Traffic Engine</span>
+      </h1>
+      <p class="hero-desc">
+        A security-hardened browser extension for developers and security teams. Modify HTTP request/response headers, request cookies, query parameters, and redirects locally with zero network telemetry and zero data export.
+      </p>
+
+      <div class="hero-badges">
+        <span class="badge badge-emerald">✓ 100% Local Storage</span>
+        <span class="badge">✓ Zero Telemetry</span>
+        <span class="badge">✓ Strict Scope Guard</span>
+        <span class="badge">✓ Chrome 113+ &amp; Firefox 115+</span>
+      </div>
+
+      <div class="hero-cta">
+        <a href="#installation" class="btn btn-primary">Download Extension</a>
+        <a href="#usage" class="btn btn-secondary">See How to Use &rarr;</a>
+      </div>
+
+      <!-- Main Overview Screenshot Frame -->
+      <div class="screenshot-frame">
+        <div class="screenshot-header">
+          <div class="window-dot red"></div>
+          <div class="window-dot yellow"></div>
+          <div class="window-dot green"></div>
+          <span class="screenshot-title">SafeHeader Extension — Main Workspace</span>
+        </div>
+        <img src="assets/extension.png" alt="SafeHeader Main Workspace Interface" class="screenshot-img">
+      </div>
+
+      <!-- Core Feature Cards -->
+      <div class="overview-grid">
+        <div class="overview-card">
+          <h4>100% Local &amp; Zero Export</h4>
+          <p>Profiles and rules stay strictly in local storage. Profile export and telemetry are disabled to protect credentials from exfiltration.</p>
+        </div>
+        <div class="overview-card">
+          <h4>Strict Scope Guard</h4>
+          <p>Sensitive credentials (Authorization, Cookie, tokens, secrets) are blocked from running on wildcard (*) domains unless scoped with a URL filter.</p>
+        </div>
+        <div class="overview-card">
+          <h4>Native DeclarativeNetRequest</h4>
+          <p>Modifies headers and cookies natively in the browser network stack without intercepting response bodies or running background JS listeners.</p>
+        </div>
+        <div class="overview-card">
+          <h4>Multi-Profile Support</h4>
+          <p>Organize rules into independent profiles with custom badge numbers and colors. Run a single profile or multiple profiles simultaneously.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. INSTALLATION SECTION -->
+  <section id="installation" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Get Started</span>
+        <h2 class="section-title">Installation Guide</h2>
+        <p class="section-desc">Download ready-to-load ZIP packages for your preferred browser.</p>
+      </div>
+
+      <div class="install-tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="tab-chrome">Google Chrome / Chromium</button>
+          <button class="tab-btn" data-tab="tab-firefox">Mozilla Firefox</button>
+          <button class="tab-btn" data-tab="tab-source">Build from Source</button>
+        </div>
+
+        <!-- Chrome Panel -->
+        <div id="tab-chrome" class="tab-panel active">
+          <div class="download-cta-box">
+            <div>
+              <h4>Chrome / Edge / Brave Package</h4>
+              <p>Supports Google Chrome 113+, Microsoft Edge, Brave, Arc, Opera, and Vivaldi.</p>
+            </div>
+            <a id="btn-download-chrome" href="https://github.com/RohithV16/safeheader/releases/latest" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              Download Latest Chrome Package (.zip)
+            </a>
+          </div>
+
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h5>Download and Unzip</h5>
+                <p>Download the latest Chrome zip release (<code class="code-inline">safeheader-*-chrome.zip</code>) from GitHub Releases and extract it into a folder on your computer.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h5>Open Chrome Extensions</h5>
+                <p>Open Chrome and navigate to <code class="code-inline">chrome://extensions</code> in your address bar.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h5>Enable Developer Mode</h5>
+                <p>Turn on the <strong>Developer mode</strong> toggle located in the top-right corner.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <h5>Click "Load unpacked"</h5>
+                <p>Click the <strong>Load unpacked</strong> button and select the extracted folder (which contains <code class="code-inline">manifest.json</code> at the root).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Firefox Panel -->
+        <div id="tab-firefox" class="tab-panel">
+          <div class="download-cta-box">
+            <div>
+              <h4>Mozilla Firefox Package</h4>
+              <p>Supports Mozilla Firefox 115+ ESR and modern releases with native sidebar action.</p>
+            </div>
+            <a id="btn-download-firefox" href="https://github.com/RohithV16/safeheader/releases/latest" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              Download Latest Firefox Package (.zip)
+            </a>
+          </div>
+
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h5>Download and Unzip</h5>
+                <p>Download the latest Firefox zip release (<code class="code-inline">safeheader-*-firefox.zip</code>) and extract the archive to a local directory.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h5>Open Firefox Debugging</h5>
+                <p>Open Firefox and navigate to <code class="code-inline">about:debugging#/runtime/this-firefox</code>.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h5>Load Temporary Add-on</h5>
+                <p>Click <strong>Load Temporary Add-on...</strong> and choose the <code class="code-inline">manifest.json</code> file inside the extracted directory.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <h5>Open Toolbar or Sidebar</h5>
+                <p>SafeHeader will appear in your toolbar and can be opened in the native Firefox Sidebar (<code class="code-inline">Cmd+B</code> / <code class="code-inline">Ctrl+B</code>).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source Panel -->
+        <div id="tab-source" class="tab-panel">
+          <div class="download-cta-box">
+            <div>
+              <h4>Compile from Source Code</h4>
+              <p>Clone the GitHub repository and build packages locally with Node.js 20+.</p>
+            </div>
+            <a href="https://github.com/RohithV16/safeheader" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+              View Repository &rarr;
+            </a>
+          </div>
+
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h5>Clone &amp; Install</h5>
+                <p>Run <code class="code-inline">git clone https://github.com/RohithV16/safeheader.git &amp;&amp; cd safeheader &amp;&amp; npm ci</code></p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h5>Build &amp; Package</h5>
+                <p>Run <code class="code-inline">npm run package</code> to compile both Chrome (<code class="code-inline">dist/</code>) and Firefox (<code class="code-inline">dist-firefox/</code>) distributions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. USAGE & HOW TO USE SECTION -->
+  <section id="usage" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Visual Walkthrough</span>
+        <h2 class="section-title">How to Use SafeHeader</h2>
+        <p class="section-desc">A step-by-step visual guide to configuring rules, scoping requests, and managing security.</p>
+      </div>
+
+      <!-- Step 1: Adding Rules -->
+      <div class="usage-step">
+        <div class="usage-step-header">
+          <div class="usage-step-badge">Step 1</div>
+          <h3 class="usage-step-title">Adding and Managing Rules</h3>
+          <p class="usage-step-desc">
+            Click the <strong>+</strong> button in the top bar to add rules across 5 categories: <strong>Request Headers</strong> (add/set/remove outgoing headers), <strong>Response Headers</strong> (override CORS or cache headers), <strong>Add Cookies</strong> (inject cookies into outbound headers without browser cookie jar pollution), <strong>Query Parameters</strong>, and <strong>Redirects / Blocks</strong>.
+          </p>
+        </div>
+        <div class="screenshot-frame">
+          <div class="screenshot-header">
+            <div class="window-dot red"></div>
+            <div class="window-dot yellow"></div>
+            <div class="window-dot green"></div>
+            <span class="screenshot-title">SafeHeader — Profiles &amp; Rule Builder</span>
+          </div>
+          <img src="assets/extension.png" alt="Adding rules in SafeHeader" class="screenshot-img">
+        </div>
+      </div>
+
+      <!-- Step 2: Profile Settings and Menu -->
+      <div class="usage-step">
+        <div class="usage-step-header">
+          <div class="usage-step-badge">Step 2</div>
+          <h3 class="usage-step-title">Profile Settings &amp; Actions Menu</h3>
+          <p class="usage-step-desc">
+            Click the three-dots (<code class="code-inline">&vellip;</code>) menu in the toolbar to clone active profiles, switch multi-profile execution modes, import backup configs locally, customize display density, or quickly jump into security and audit logs.
+          </p>
+        </div>
+        <div class="screenshot-frame">
+          <div class="screenshot-header">
+            <div class="window-dot red"></div>
+            <div class="window-dot yellow"></div>
+            <div class="window-dot green"></div>
+            <span class="screenshot-title">SafeHeader — Profile Options &amp; Settings Menu</span>
+          </div>
+          <img src="assets/controlPanek.png" alt="Profile Settings Menu in SafeHeader" class="screenshot-img">
+        </div>
+      </div>
+
+      <!-- Step 3: Corporate Security Controls -->
+      <div class="usage-step">
+        <div class="usage-step-header">
+          <div class="usage-step-badge">Step 3</div>
+          <h3 class="usage-step-title">Corporate Security Controls &amp; Scope Guard</h3>
+          <p class="usage-step-desc">
+            Click the shield icon in the top toolbar to access the <strong>Corporate Security Controls</strong> panel. SafeHeader provides enterprise safety out of the box: <strong>Strict Scope Guard (Anti-Leakage)</strong> blocks sensitive auth tokens on wildcards, <strong>Mask Secret Values</strong> hides keys to prevent over-the-shoulder leaks, <strong>Presentation Mode</strong> protects during screen shares, and <strong>Wipe All Local Data</strong> instantly purges local storage.
+          </p>
+        </div>
+        <div class="screenshot-frame">
+          <div class="screenshot-header">
+            <div class="window-dot red"></div>
+            <div class="window-dot yellow"></div>
+            <div class="window-dot green"></div>
+            <span class="screenshot-title">SafeHeader — Corporate Security Controls Modal</span>
+          </div>
+          <img src="assets/controls.png" alt="Corporate Security Controls in SafeHeader" class="screenshot-img">
+        </div>
+      </div>
+
+      <!-- Step 4: Audit Log -->
+      <div class="usage-step">
+        <div class="usage-step-header">
+          <div class="usage-step-badge">Step 4</div>
+          <h3 class="usage-step-title">Compliance &amp; Local Audit Log</h3>
+          <p class="usage-step-desc">
+            SafeHeader maintains a metadata-only local audit log in a fixed 20-entry FIFO ring buffer. It records rule activations, security setting changes, and scope violations with timestamps for enterprise compliance. Secret values are never logged.
+          </p>
+        </div>
+        <div class="screenshot-frame">
+          <div class="screenshot-header">
+            <div class="window-dot red"></div>
+            <div class="window-dot yellow"></div>
+            <div class="window-dot green"></div>
+            <span class="screenshot-title">SafeHeader — Local Audit Log Ring Buffer</span>
+          </div>
+          <img src="assets/audit-log.png" alt="Local Audit Log in SafeHeader" class="screenshot-img">
+        </div>
+      </div>
+
+      <!-- Quick Recipes -->
+      <div class="usage-step">
+        <div class="usage-step-header">
+          <div class="usage-step-badge">Recipes</div>
+          <h3 class="usage-step-title">Common Usage Recipes</h3>
+          <p class="usage-step-desc">Quick configurations for typical development workflows.</p>
+        </div>
+
+        <div class="recipes-grid">
+          <div class="recipe-card">
+            <h4>1. Bearer Token Auth</h4>
+            <p>Inject an Authorization token into API calls to staging.</p>
+            <div class="code-box"><pre>Rule: Request Header
+Name: Authorization
+Value: Bearer eyJhbGci...
+Filter: *://api.staging.corp/*</pre></div>
+          </div>
+
+          <div class="recipe-card">
+            <h4>2. Local CORS Bypass</h4>
+            <p>Allow localhost to access remote microservices.</p>
+            <div class="code-box"><pre>Rule: Response Header
+Name: Access-Control-Allow-Origin
+Value: http://localhost:3000
+Filter: *://api.dev.corp/*</pre></div>
+          </div>
+
+          <div class="recipe-card">
+            <h4>3. Cookie Injection</h4>
+            <p>Inject experiment or session cookies into requests.</p>
+            <div class="code-box"><pre>Rule: Add Cookie
+Name: feature_flag_v2
+Value: enabled
+Filter: *://*.app.corp/*</pre></div>
+          </div>
+
+          <div class="recipe-card">
+            <h4>4. Redirect to Localhost</h4>
+            <p>Redirect remote script assets to local dev server.</p>
+            <div class="code-box"><pre>Rule: Redirect
+Match: *://cdn.corp.com/bundle.js
+Redirect To: http://localhost:8080/bundle.js</pre></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <ul class="footer-links">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">How to Use</a></li>
+        <li><a href="https://github.com/RohithV16/safeheader/releases/latest" target="_blank" rel="noopener noreferrer">Latest Release</a></li>
+        <li><a href="https://github.com/RohithV16/safeheader" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://github.com/RohithV16/safeheader/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">PolyForm Noncommercial 1.0.0</a></li>
+      </ul>
+      <p>&copy; 2026 SafeHeader. 100% Local Storage &bull; Zero Telemetry &bull; PolyForm Noncommercial 1.0.0.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
