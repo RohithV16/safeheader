@@ -3,7 +3,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-rohithv16.github.io%2Fsafeheader-10b981?style=flat&logo=github)](https://rohithv16.github.io/safeheader/)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-10b981.svg)](LICENSE)
 
-A **100% local, zero-export, security-hardened** browser extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
+A **100% local, security-hardened** browser extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
 
 📖 **Official Documentation & Live Guide:** [https://rohithv16.github.io/safeheader/](https://rohithv16.github.io/safeheader/)
 
