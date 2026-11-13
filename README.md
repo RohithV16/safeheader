@@ -1,12 +1,18 @@
 # SafeHeader (Corporate Security Edition)
 
-A **100% local, zero-export, security-hardened** Chrome Manifest V3 extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
+[![Documentation](https://img.shields.io/badge/Documentation-rohithv16.github.io%2Fsafeheader-10b981?style=flat&logo=github)](https://rohithv16.github.io/safeheader/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gray.svg)](LICENSE)
 
-> **No backend or local server required.** Once installed in Chrome, everything runs locally inside Chrome's native `declarativeNetRequest` engine.
+A **100% local, zero-export, security-hardened** browser extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
+
+📖 **Official Documentation & Live Guide:** [https://rohithv16.github.io/safeheader/](https://rohithv16.github.io/safeheader/)
+
+> **No backend or local server required.** Once installed in Chrome or Firefox, everything runs locally inside the browser's native `declarativeNetRequest` engine.
 
 ---
 
 ## Table of Contents
+- [Documentation & Visual Guide](https://rohithv16.github.io/safeheader/)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [What You Can Do](#what-you-can-do)
@@ -20,6 +26,8 @@ A **100% local, zero-export, security-hardened** Chrome Manifest V3 extension fo
 ---
 
 ## Installation
+
+> 💡 **Visual Installation Guide & Downloads:** See the step-by-step walkthrough at [rohithv16.github.io/safeheader/#installation](https://rohithv16.github.io/safeheader/#installation).
 
 ### Option 1: Install from GitHub Releases (Recommended for End Users)
 1. Go to the repository's **Releases** page on GitHub and download `safeheader-v<version>.zip`.
