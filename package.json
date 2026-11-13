@@ -1,6 +1,6 @@
 {
   "name": "safeheader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "description": "SafeHeader — local-only, security-hardened Chrome MV3 extension for modifying HTTP request/response headers, cookies, query parameters, and redirects.",
