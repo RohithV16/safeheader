@@ -28,8 +28,7 @@
     "open_in_tab": true
   },
   "background": {
-    "service_worker": "service-worker.js",
-    "type": "module"
+    "service_worker": "service-worker.js"
   },
   "storage": {
     "managed_schema": "managed_schema.json"

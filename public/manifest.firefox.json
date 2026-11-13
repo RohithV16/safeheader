@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "SafeHeader",
+  "version": "0.1.2",
+  "description": "Local-only, security-hardened extension to modify HTTP request/response headers, cookies, query parameters, and redirects with zero data export.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "SafeHeader",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "sidebar_action": {
+    "default_panel": "sidepanel.html",
+    "default_title": "SafeHeader",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "scripts": ["service-worker.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "safeheader@local",
+      "strict_min_version": "115.0"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';"
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

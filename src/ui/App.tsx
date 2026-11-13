@@ -362,15 +362,29 @@ export function App({ surface }: AppProps) {
 
   const handleOpenSidePanel = async () => {
     try {
-      const win = await chrome.windows.getCurrent();
-      if (win.id !== undefined && chrome.sidePanel?.open) {
-        await chrome.sidePanel.open({ windowId: win.id });
+      if (chrome.sidePanel?.open) {
+        const win = await chrome.windows.getCurrent();
+        if (win.id !== undefined) {
+          await chrome.sidePanel.open({ windowId: win.id });
+          if (surface === 'popup') {
+            window.close();
+          }
+          return;
+        }
+      }
+      const browserGlobal = (
+        globalThis as unknown as {
+          browser?: { sidebarAction?: { open?: () => Promise<void> } };
+        }
+      ).browser;
+      if (browserGlobal?.sidebarAction?.open) {
+        await browserGlobal.sidebarAction.open();
         if (surface === 'popup') {
           window.close();
         }
       }
     } catch (err) {
-      console.error('Unable to open side panel:', err);
+      console.error('Unable to open side panel or sidebar:', err);
     }
   };
 

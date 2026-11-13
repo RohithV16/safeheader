@@ -16,8 +16,8 @@ export default defineConfig({
           entryPoints: [resolve(__dirname, 'src/background/service-worker.ts')],
           outfile: resolve(__dirname, 'dist/service-worker.js'),
           bundle: true,
-          target: 'chrome113',
-          format: 'esm',
+          target: ['chrome113', 'firefox115'],
+          format: 'iife',
           minify: true,
         });
       },
@@ -27,7 +27,7 @@ export default defineConfig({
     legalComments: 'none',
   },
   build: {
-    target: 'chrome113',
+    target: ['chrome113', 'firefox115'],
     minify: 'esbuild',
     outDir: '../dist',
     emptyOutDir: true,
