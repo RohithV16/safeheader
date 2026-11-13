@@ -129,16 +129,35 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 
 ---
 
-## For Maintainers & Chrome Web Store
+## Browser Compatibility
 
-### Build & Package (Maintainers)
+SafeHeader supports both **Chromium** and **Firefox** browsers with dedicated manifest packaging:
+
+- **Chrome, Edge, Brave, Arc, Opera, Vivaldi:** Load unpacked from `dist/` or publish `release/safeheader-v<version>-chrome.zip`.
+- **Mozilla Firefox (115+ ESR & modern releases):** Load temporary add-on from `dist-firefox/` (`about:debugging#/runtime/this-firefox`) or publish `release/safeheader-v<version>-firefox.zip`.
+
+---
+
+## For Maintainers & Publishing
+
+### Build & Package
 ```bash
 npm install
 npm test
 npm run package
 ```
-- `npm run build` compiles the standalone extension into `dist/`.
-- `npm run package` builds `dist/` and creates a ready-to-publish archive at `release/safeheader-v<version>.zip`.
+- `npm run build` compiles `dist/` (Chromium MV3) and generates `dist-firefox/` (Firefox MV3 with `sidebar_action` & gecko ID).
+- `npm run package` builds and produces release archives in `release/`:
+  - `safeheader-v<version>-chrome.zip` (for Chrome Web Store & Edge Add-ons)
+  - `safeheader-v<version>-firefox.zip` (for Mozilla Add-ons AMO)
+  - `safeheader-v<version>.zip` (default release bundle)
+  - `SHA256SUMS.txt` (verification checksums)
+
+### Loading in Firefox (Dev / Testing)
+1. Run `npm run build`.
+2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
+3. Click **Load Temporary Add-on...**
+4. Select `dist-firefox/manifest.json`.
 
 ### Optional Dev-Only Test Utility (`echo-server`)
 End users do **not** run this. It is an optional local test server for developers to verify wire-level headers and cookies during development:
