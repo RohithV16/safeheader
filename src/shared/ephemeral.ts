@@ -1,19 +1,22 @@
 import { EPHEMERAL_SECRETS_SESSION_KEY } from './constants';
 import type { ExtensionState, Profile } from './types';
 
+function collectEphemeralFromList(
+  items: ReadonlyArray<{ id: string; ephemeral?: boolean; value?: string }>,
+  out: Record<string, string>
+): void {
+  for (const item of items) {
+    if (item.ephemeral && item.value) {
+      out[item.id] = item.value;
+    }
+  }
+}
+
 function collectProfileEphemeralSecrets(profile: Profile, out: Record<string, string>): void {
-  for (const r of profile.requestHeaders) {
-    if (r.ephemeral && r.value) out[r.id] = r.value;
-  }
-  for (const r of profile.responseHeaders) {
-    if (r.ephemeral && r.value) out[r.id] = r.value;
-  }
-  for (const c of profile.cookies) {
-    if (c.ephemeral && c.value) out[c.id] = c.value;
-  }
-  for (const q of profile.queryParams) {
-    if (q.ephemeral && q.value) out[q.id] = q.value;
-  }
+  collectEphemeralFromList(profile.requestHeaders, out);
+  collectEphemeralFromList(profile.responseHeaders, out);
+  collectEphemeralFromList(profile.cookies, out);
+  collectEphemeralFromList(profile.queryParams, out);
 }
 
 export function extractEphemeralSecretsMap(state: ExtensionState): Record<string, string> {

@@ -6,7 +6,6 @@ export const WARNINGS_SESSION_KEY = 'compileWarnings';
 export const SYNC_HEALTH_SESSION_KEY = 'syncHealth';
 export const RECOVERY_NOTICE_SESSION_KEY = 'recoveryNotice';
 export const EPHEMERAL_SECRETS_SESSION_KEY = 'ephemeralSecrets';
-export const AUTO_PAUSE_ALARM_NAME = 'safeheader-auto-pause';
 
 export const MAX_IMPORT_BYTES = 512 * 1024; // 512 KB cap for pasted JSON
 export const MAX_PROFILES = 50;
@@ -14,12 +13,12 @@ export const MAX_RULES_PER_SECTION = 200;
 export const MAX_AUDIT_ENTRIES = 200;
 
 export const PROFILE_COLORS = [
-  '#2e7d32', // ModHeader Green
+  '#2e7d32', // Green
   '#1976d2', // Material Blue
   '#7b1fa2', // Material Purple
-  '#00838f', // Material Cyan
-  '#e65100', // Material Deep Orange
-  '#c62828', // Material Red
+  '#00838f', // Material Teal
+  '#0288d1', // Sky Blue
+  '#5e35b1', // Deep Violet
   '#303f9f', // Material Indigo
   '#455a64', // Material Blue Grey
 ];

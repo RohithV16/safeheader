@@ -97,6 +97,18 @@ describe('storage normalization, backup ring & recovery', () => {
     expect(normalized.profiles[0].title).toBe('Legacy');
   });
 
+  it('preserves user-cleared empty shortTitle without resetting to profile index', () => {
+    const normalized = normalizeState({
+      schemaVersion: 1,
+      profiles: [
+        { id: 'p1', title: 'Profile 1', shortTitle: '' },
+        { id: 'p2', title: 'Profile 2', shortTitle: 'DEV' },
+      ],
+    });
+    expect(normalized.profiles[0].shortTitle).toBe('');
+    expect(normalized.profiles[1].shortTitle).toBe('DEV');
+  });
+
   it('maintains .bak backup ring and recovers corrupt main state into quarantine', async () => {
     const healthy = createDefaultState();
     healthy.profiles[0].title = 'Corporate Dev';

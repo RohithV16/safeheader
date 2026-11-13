@@ -50,7 +50,12 @@ if (fs.existsSync(outZip)) {
   fs.unlinkSync(outZip);
 }
 
-execFileSync('zip', ['-r', '-q', '-X', outZip, '.'], { cwd: distDir, stdio: 'inherit' });
+const zipBinary = fs.existsSync('/usr/bin/zip') ? '/usr/bin/zip' : 'zip';
+execFileSync(zipBinary, ['-r', '-q', '-X', outZip, '.'], {
+  cwd: distDir,
+  stdio: 'inherit',
+  env: { ...process.env, PATH: '/usr/bin:/bin:/usr/sbin:/sbin' },
+});
 
 const zipBytes = fs.readFileSync(outZip);
 const sha256 = crypto.createHash('sha256').update(zipBytes).digest('hex');

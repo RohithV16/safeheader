@@ -7,7 +7,10 @@ import type {
   CompiledRuleSet,
   CompileWarning,
   ExtensionState,
+  HeaderRule,
   Profile,
+  QueryParamRule,
+  RedirectRule,
   SyncHealth,
   UrlFilterRule,
 } from '../shared/types';
@@ -18,7 +21,6 @@ import {
   getHeaderRuleWarning,
   getQueryParamWarning,
   getRedirectRuleWarning,
-  hasConcreteDomainScope,
   hasControlChars,
   hasSpecificScope,
   isAppendAllowedOnRequestHeader,
@@ -70,6 +72,223 @@ const defaultRegexChecker: RegexSupportChecker = async (regex: string) => {
   return supported;
 };
 
+function compileSingleRequestHeader(
+  rule: HeaderRule,
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  seen: Set<string>,
+  warnings: CompileWarning[]
+): { info: chrome.declarativeNetRequest.ModifyHeaderInfo; sensitive: boolean } | null {
+  if (!rule.enabled || !rule.name.trim()) return null;
+  const name = rule.name.trim();
+  const lower = name.toLowerCase();
+
+  const warningMsg = getHeaderRuleWarning(rule, 'request');
+  if (warningMsg) {
+    warnings.push({ profileId: profile.id, ruleId: rule.id, message: warningMsg });
+  }
+
+  if (!isValidHeaderName(name) || hasControlChars(rule.value)) return null;
+  if (isRestrictedRequestHeader(name)) return null;
+
+  if (requireScope && !hasScope && rule.operation !== 'remove' && isSensitiveHeaderName(name)) {
+    warnings.push({
+      profileId: profile.id,
+      ruleId: rule.id,
+      message: `Security Guard: Sensitive header "${name}" blocked without a concrete domain URL filter.`,
+    });
+    return null;
+  }
+
+  let operation = rule.operation;
+  if (operation === 'append' && !isAppendAllowedOnRequestHeader(name)) {
+    operation = 'set';
+  }
+
+  if (seen.has(lower)) {
+    warnings.push({
+      profileId: profile.id,
+      ruleId: rule.id,
+      message: `Duplicate request header "${name}" in profile "${profile.title}" — later rule skipped.`,
+    });
+    return null;
+  }
+  seen.add(lower);
+
+  const sensitive = operation !== 'remove' && isSensitiveHeaderName(name);
+  if (operation === 'remove') {
+    return {
+      info: { header: name, operation: 'remove' as chrome.declarativeNetRequest.HeaderOperation },
+      sensitive,
+    };
+  }
+
+  return {
+    info: {
+      header: name,
+      operation: operation as chrome.declarativeNetRequest.HeaderOperation,
+      value: rule.value,
+    },
+    sensitive,
+  };
+}
+
+function compileRequestHeaders(
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  warnings: CompileWarning[]
+): { headers: chrome.declarativeNetRequest.ModifyHeaderInfo[]; hasSensitive: boolean } {
+  const headers: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
+  const seen = new Set<string>();
+  let hasSensitive = false;
+
+  for (const rule of profile.requestHeaders) {
+    const res = compileSingleRequestHeader(rule, profile, requireScope, hasScope, seen, warnings);
+    if (res) {
+      headers.push(res.info);
+      if (res.sensitive) hasSensitive = true;
+    }
+  }
+
+  return { headers, hasSensitive };
+}
+
+function compileCookieHeaders(
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  warnings: CompileWarning[]
+): { headers: chrome.declarativeNetRequest.ModifyHeaderInfo[]; hasSensitive: boolean } {
+  const headers: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
+  const enabledCookies = profile.cookies.filter((c) => c.enabled && c.name.trim());
+  let hasSensitive = false;
+
+  if (requireScope && !hasScope && enabledCookies.length > 0) {
+    warnings.push({
+      profileId: profile.id,
+      message:
+        'Security Guard: Request cookies blocked without a concrete domain URL filter.',
+    });
+    return { headers, hasSensitive: false };
+  }
+
+  const replacePairs: string[] = [];
+  const appendPairs: string[] = [];
+
+  for (const c of enabledCookies) {
+    const warningMsg = getCookieRuleWarning(c);
+    if (warningMsg) {
+      warnings.push({ profileId: profile.id, ruleId: c.id, message: warningMsg });
+    }
+    if (!isValidCookieName(c.name) || hasControlChars(c.value) || c.value.includes(';')) {
+      continue;
+    }
+    const pair = `${c.name.trim()}=${c.value}`;
+    if (c.mode === 'replace') {
+      replacePairs.push(pair);
+    } else {
+      appendPairs.push(pair);
+    }
+  }
+
+  if (replacePairs.length > 0) {
+    hasSensitive = true;
+    const combined = [...replacePairs, ...appendPairs].join('; ');
+    headers.push({
+      header: 'Cookie',
+      operation: 'set' as chrome.declarativeNetRequest.HeaderOperation,
+      value: combined,
+    });
+  } else if (appendPairs.length > 0) {
+    hasSensitive = true;
+    headers.push({
+      header: 'Cookie',
+      operation: 'append' as chrome.declarativeNetRequest.HeaderOperation,
+      value: appendPairs.join('; '),
+    });
+  }
+
+  return { headers, hasSensitive };
+}
+
+function compileSingleResponseHeader(
+  rule: HeaderRule,
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  seen: Set<string>,
+  warnings: CompileWarning[]
+): { info: chrome.declarativeNetRequest.ModifyHeaderInfo; sensitive: boolean } | null {
+  if (!rule.enabled || !rule.name.trim()) return null;
+  const name = rule.name.trim();
+  const lower = name.toLowerCase();
+
+  const warningMsg = getHeaderRuleWarning(rule, 'response');
+  if (warningMsg) {
+    warnings.push({ profileId: profile.id, ruleId: rule.id, message: warningMsg });
+  }
+  if (!isValidHeaderName(name) || hasControlChars(rule.value)) return null;
+
+  if (requireScope && !hasScope && rule.operation !== 'remove' && isSensitiveHeaderName(name)) {
+    warnings.push({
+      profileId: profile.id,
+      ruleId: rule.id,
+      message: `Security Guard: Sensitive response header "${name}" blocked without a concrete domain URL filter.`,
+    });
+    return null;
+  }
+
+  if (lower !== 'set-cookie' && seen.has(lower)) {
+    warnings.push({
+      profileId: profile.id,
+      ruleId: rule.id,
+      message: `Duplicate response header "${name}" in profile "${profile.title}" — later rule skipped.`,
+    });
+    return null;
+  }
+  seen.add(lower);
+
+  const sensitive = rule.operation !== 'remove' && isSensitiveHeaderName(name);
+  if (rule.operation === 'remove') {
+    return {
+      info: { header: name, operation: 'remove' as chrome.declarativeNetRequest.HeaderOperation },
+      sensitive,
+    };
+  }
+
+  return {
+    info: {
+      header: name,
+      operation: rule.operation as chrome.declarativeNetRequest.HeaderOperation,
+      value: rule.value,
+    },
+    sensitive,
+  };
+}
+
+function compileResponseHeaders(
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  warnings: CompileWarning[]
+): { headers: chrome.declarativeNetRequest.ModifyHeaderInfo[]; hasSensitive: boolean } {
+  const headers: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
+  const seen = new Set<string>();
+  let hasSensitive = false;
+
+  for (const rule of profile.responseHeaders) {
+    const res = compileSingleResponseHeader(rule, profile, requireScope, hasScope, seen, warnings);
+    if (res) {
+      headers.push(res.info);
+      if (res.sensitive) hasSensitive = true;
+    }
+  }
+
+  return { headers, hasSensitive };
+}
+
 function buildModifyHeaderInfos(
   profile: Profile,
   requireScopeForSensitive: boolean,
@@ -81,175 +300,66 @@ function buildModifyHeaderInfos(
   responseHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[];
   hasSensitiveCompiled: boolean;
 } {
-  const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
-  const seenReqHeaders = new Set<string>();
-  let hasSensitiveCompiled = false;
+  const req = compileRequestHeaders(profile, requireScopeForSensitive, profileHasSpecificScope, warnings);
+  const cookie = compileCookieHeaders(profile, requireScopeForSensitive, profileHasSpecificScope, warnings);
+  const resp = compileResponseHeaders(profile, requireScopeForSensitive, profileHasSpecificScope, warnings);
 
-  for (const rule of profile.requestHeaders) {
-    if (!rule.enabled || !rule.name.trim()) continue;
-    const name = rule.name.trim();
-    const lower = name.toLowerCase();
+  return {
+    requestHeaders: req.headers,
+    cookieHeaders: cookie.headers,
+    responseHeaders: resp.headers,
+    hasSensitiveCompiled: req.hasSensitive || cookie.hasSensitive || resp.hasSensitive,
+  };
+}
 
-    const warningMsg = getHeaderRuleWarning(rule, 'request');
-    if (warningMsg) {
-      warnings.push({ profileId: profile.id, ruleId: rule.id, message: warningMsg });
-    }
+function compileSingleQueryParam(
+  q: QueryParamRule,
+  profile: Profile,
+  requireScope: boolean,
+  hasScope: boolean,
+  seenKeys: Set<string>,
+  warnings: CompileWarning[]
+): { action: 'add' | 'remove'; key: string; value?: string; replaceOnly?: boolean; sensitive: boolean } | null {
+  if (!q.enabled || !q.name.trim()) return null;
+  const key = q.name.trim();
 
-    if (!isValidHeaderName(name) || hasControlChars(rule.value)) continue;
-    if (isRestrictedRequestHeader(name)) continue;
-
-    if (
-      requireScopeForSensitive &&
-      !profileHasSpecificScope &&
-      rule.operation !== 'remove' &&
-      isSensitiveHeaderName(name)
-    ) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: rule.id,
-        message: `Security Guard: Sensitive header "${name}" blocked without a concrete domain URL filter or Tab Lock.`,
-      });
-      continue;
-    }
-
-    let operation = rule.operation;
-    if (operation === 'append' && !isAppendAllowedOnRequestHeader(name)) {
-      operation = 'set';
-    }
-
-    if (seenReqHeaders.has(lower)) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: rule.id,
-        message: `Duplicate request header "${name}" in profile "${profile.title}" — later rule skipped.`,
-      });
-      continue;
-    }
-    seenReqHeaders.add(lower);
-
-    if (operation !== 'remove' && isSensitiveHeaderName(name)) {
-      hasSensitiveCompiled = true;
-    }
-
-    if (operation === 'remove') {
-      requestHeaders.push({
-        header: name,
-        operation: 'remove' as chrome.declarativeNetRequest.HeaderOperation,
-      });
-    } else {
-      requestHeaders.push({
-        header: name,
-        operation: operation as chrome.declarativeNetRequest.HeaderOperation,
-        value: rule.value,
-      });
-    }
+  const warningMsg = getQueryParamWarning(q);
+  if (warningMsg) {
+    warnings.push({ profileId: profile.id, ruleId: q.id, message: warningMsg });
+    return null;
   }
 
-  // Compile dedicated Cookies section into Cookie header operations
-  const cookieHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
-  const enabledCookies = profile.cookies.filter((c) => c.enabled && c.name.trim());
-
-  if (requireScopeForSensitive && !profileHasSpecificScope && enabledCookies.length > 0) {
+  const sensitive = q.operation !== 'remove' && isSensitiveHeaderName(key);
+  if (requireScope && !hasScope && sensitive) {
     warnings.push({
       profileId: profile.id,
-      message:
-        'Security Guard: Request cookies blocked without a concrete domain URL filter or Tab Lock.',
+      ruleId: q.id,
+      message: `Security Guard: Sensitive query parameter "${key}" blocked without a concrete domain URL filter.`,
     });
-  } else {
-    const replacePairs: string[] = [];
-    const appendPairs: string[] = [];
-
-    for (const c of enabledCookies) {
-      const warningMsg = getCookieRuleWarning(c);
-      if (warningMsg) {
-        warnings.push({ profileId: profile.id, ruleId: c.id, message: warningMsg });
-      }
-      if (!isValidCookieName(c.name) || hasControlChars(c.value) || c.value.includes(';')) {
-        continue;
-      }
-      const pair = `${c.name.trim()}=${c.value}`;
-      if (c.mode === 'replace') {
-        replacePairs.push(pair);
-      } else {
-        appendPairs.push(pair);
-      }
-    }
-
-    if (replacePairs.length > 0) {
-      hasSensitiveCompiled = true;
-      const combined = [...replacePairs, ...appendPairs].join('; ');
-      cookieHeaders.push({
-        header: 'Cookie',
-        operation: 'set' as chrome.declarativeNetRequest.HeaderOperation,
-        value: combined,
-      });
-    } else if (appendPairs.length > 0) {
-      hasSensitiveCompiled = true;
-      cookieHeaders.push({
-        header: 'Cookie',
-        operation: 'append' as chrome.declarativeNetRequest.HeaderOperation,
-        value: appendPairs.join('; '),
-      });
-    }
+    return null;
   }
 
-  const responseHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
-  const seenRespHeaders = new Set<string>();
+  if (seenKeys.has(key)) {
+    warnings.push({
+      profileId: profile.id,
+      ruleId: q.id,
+      message: `Duplicate query parameter "${key}" in profile "${profile.title}" — later rule skipped.`,
+    });
+    return null;
+  }
+  seenKeys.add(key);
 
-  for (const rule of profile.responseHeaders) {
-    if (!rule.enabled || !rule.name.trim()) continue;
-    const name = rule.name.trim();
-    const lower = name.toLowerCase();
-
-    const warningMsg = getHeaderRuleWarning(rule, 'response');
-    if (warningMsg) {
-      warnings.push({ profileId: profile.id, ruleId: rule.id, message: warningMsg });
-    }
-    if (!isValidHeaderName(name) || hasControlChars(rule.value)) continue;
-
-    if (
-      requireScopeForSensitive &&
-      !profileHasSpecificScope &&
-      rule.operation !== 'remove' &&
-      isSensitiveHeaderName(name)
-    ) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: rule.id,
-        message: `Security Guard: Sensitive response header "${name}" blocked without a concrete domain URL filter or Tab Lock.`,
-      });
-      continue;
-    }
-
-    if (lower !== 'set-cookie' && seenRespHeaders.has(lower)) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: rule.id,
-        message: `Duplicate response header "${name}" in profile "${profile.title}" — later rule skipped.`,
-      });
-      continue;
-    }
-    seenRespHeaders.add(lower);
-
-    if (rule.operation !== 'remove' && isSensitiveHeaderName(name)) {
-      hasSensitiveCompiled = true;
-    }
-
-    if (rule.operation === 'remove') {
-      responseHeaders.push({
-        header: name,
-        operation: 'remove' as chrome.declarativeNetRequest.HeaderOperation,
-      });
-    } else {
-      responseHeaders.push({
-        header: name,
-        operation: rule.operation as chrome.declarativeNetRequest.HeaderOperation,
-        value: rule.value,
-      });
-    }
+  if (q.operation === 'remove') {
+    return { action: 'remove', key, sensitive };
   }
 
-  return { requestHeaders, cookieHeaders, responseHeaders, hasSensitiveCompiled };
+  return {
+    action: 'add',
+    key,
+    value: q.value,
+    replaceOnly: q.replaceOnly,
+    sensitive,
+  };
 }
 
 function buildQueryTransform(
@@ -267,43 +377,24 @@ function buildQueryTransform(
   let hasSensitiveQuery = false;
 
   for (const q of profile.queryParams ?? []) {
-    if (!q.enabled || !q.name.trim()) continue;
-    const key = q.name.trim();
-    const warningMsg = getQueryParamWarning(q);
-    if (warningMsg) {
-      warnings.push({ profileId: profile.id, ruleId: q.id, message: warningMsg });
-      continue;
-    }
+    const res = compileSingleQueryParam(
+      q,
+      profile,
+      requireScopeForSensitive,
+      profileHasSpecificScope,
+      seenKeys,
+      warnings
+    );
+    if (!res) continue;
 
-    const sensitive = q.operation !== 'remove' && isSensitiveHeaderName(key);
-    if (requireScopeForSensitive && !profileHasSpecificScope && sensitive) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: q.id,
-        message: `Security Guard: Sensitive query parameter "${key}" blocked without a concrete domain URL filter or Tab Lock.`,
-      });
-      continue;
-    }
-
-    if (seenKeys.has(key)) {
-      warnings.push({
-        profileId: profile.id,
-        ruleId: q.id,
-        message: `Duplicate query parameter "${key}" in profile "${profile.title}" — later rule skipped.`,
-      });
-      continue;
-    }
-    seenKeys.add(key);
-
-    if (sensitive) hasSensitiveQuery = true;
-
-    if (q.operation === 'remove') {
-      removeParams.push(key);
+    if (res.sensitive) hasSensitiveQuery = true;
+    if (res.action === 'remove') {
+      removeParams.push(res.key);
     } else {
       addOrReplaceParams.push({
-        key,
-        value: q.value,
-        ...(q.replaceOnly ? { replaceOnly: true } : {}),
+        key: res.key,
+        value: res.value ?? '',
+        ...(res.replaceOnly ? { replaceOnly: true } : {}),
       });
     }
   }
@@ -365,9 +456,6 @@ function buildBaseCondition(
   if (excludedRequestDomains.length > 0) {
     baseCondition.excludedRequestDomains = excludedRequestDomains;
   }
-  if (profile.tabLockId !== null) {
-    baseCondition.tabIds = [profile.tabLockId];
-  }
   return baseCondition;
 }
 
@@ -394,6 +482,40 @@ async function isCaptureRegexSupported(
   return defaultChecker(regex);
 }
 
+function createRedirectAction(r: RedirectRule): chrome.declarativeNetRequest.RuleAction | null {
+  if (r.mode === 'block') {
+    return { type: 'block' as chrome.declarativeNetRequest.RuleActionType };
+  }
+  if (r.mode === 'url') {
+    return {
+      type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
+      redirect: { url: r.toUrl.trim() },
+    };
+  }
+  if (r.mode === 'regexSubstitution') {
+    return {
+      type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
+      redirect: { regexSubstitution: r.toUrl.trim() },
+    };
+  }
+  if (r.mode === 'transform') {
+    const parsed = parseTransformTarget(r.toUrl);
+    if (!parsed) return null;
+    return {
+      type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
+      redirect: {
+        transform: {
+          ...(parsed.scheme ? { scheme: parsed.scheme } : {}),
+          ...(parsed.host ? { host: parsed.host } : {}),
+          ...(parsed.port !== undefined ? { port: parsed.port } : {}),
+          ...(parsed.path ? { path: parsed.path } : {}),
+        },
+      },
+    };
+  }
+  return null;
+}
+
 async function compileRedirectRulesForProfile(
   profile: Profile,
   excludedRequestDomains: string[],
@@ -404,87 +526,45 @@ async function compileRedirectRulesForProfile(
 ): Promise<Array<Omit<chrome.declarativeNetRequest.Rule, 'id'>>> {
   const out: Array<Omit<chrome.declarativeNetRequest.Rule, 'id'>> = [];
   const baseCondition = buildBaseCondition(profile, excludedRequestDomains);
+  const enabledRedirects = (profile.redirects ?? []).filter((r) => r.enabled && r.fromPattern.trim());
 
-  for (const r of profile.redirects ?? []) {
-    if (!r.enabled || !r.fromPattern.trim()) continue;
-    const enforceDomainOnFrom = requireScopeForSensitive && profile.tabLockId === null;
-    const warningMsg = getRedirectRuleWarning(r, enforceDomainOnFrom);
+  const regexChecks = await Promise.all(
+    enabledRedirects.map((r) => {
+      if (r.matchType !== 'regex') return Promise.resolve(true);
+      const from = r.fromPattern.trim();
+      return r.mode === 'regexSubstitution'
+        ? isCaptureRegexSupported(from, isRegexSupported)
+        : isRegexSupported(from);
+    })
+  );
+
+  for (let i = 0; i < enabledRedirects.length; i++) {
+    const r = enabledRedirects[i];
+    const warningMsg = getRedirectRuleWarning(r, requireScopeForSensitive);
     if (warningMsg) {
       warnings.push({ profileId: profile.id, ruleId: r.id, message: warningMsg });
       continue;
     }
 
     const from = r.fromPattern.trim();
-    let condition: chrome.declarativeNetRequest.RuleCondition;
-    if (r.matchType === 'regex') {
-      const ok =
-        r.mode === 'regexSubstitution'
-          ? await isCaptureRegexSupported(from, isRegexSupported)
-          : await isRegexSupported(from);
-      if (!ok) {
-        warnings.push({
-          profileId: profile.id,
-          ruleId: r.id,
-          message: `Invalid or unsupported RE2 regex redirect filter: "${from}"`,
-        });
-        continue;
-      }
-      condition = {
-        ...baseCondition,
-        regexFilter: from,
-        isUrlFilterCaseSensitive: false,
-      };
-    } else {
-      condition = {
-        ...baseCondition,
-        urlFilter: from,
-        isUrlFilterCaseSensitive: false,
-      };
+    if (r.matchType === 'regex' && !regexChecks[i]) {
+      warnings.push({
+        profileId: profile.id,
+        ruleId: r.id,
+        message: `Invalid or unsupported RE2 regex redirect filter: "${from}"`,
+      });
+      continue;
     }
 
-    if (r.mode === 'block') {
-      out.push({
-        priority,
-        action: { type: 'block' as chrome.declarativeNetRequest.RuleActionType },
-        condition,
-      });
-    } else if (r.mode === 'url') {
-      out.push({
-        priority,
-        action: {
-          type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
-          redirect: { url: r.toUrl.trim() },
-        },
-        condition,
-      });
-    } else if (r.mode === 'regexSubstitution') {
-      out.push({
-        priority,
-        action: {
-          type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
-          redirect: { regexSubstitution: r.toUrl.trim() },
-        },
-        condition,
-      });
-    } else if (r.mode === 'transform') {
-      const parsed = parseTransformTarget(r.toUrl);
-      if (!parsed) continue;
-      out.push({
-        priority,
-        action: {
-          type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
-          redirect: {
-            transform: {
-              ...(parsed.scheme ? { scheme: parsed.scheme } : {}),
-              ...(parsed.host ? { host: parsed.host } : {}),
-              ...(parsed.port !== undefined ? { port: parsed.port } : {}),
-              ...(parsed.path ? { path: parsed.path } : {}),
-            },
-          },
-        },
-        condition,
-      });
-    }
+    const action = createRedirectAction(r);
+    if (!action) continue;
+
+    const condition: chrome.declarativeNetRequest.RuleCondition =
+      r.matchType === 'regex'
+        ? { ...baseCondition, regexFilter: from, isUrlFilterCaseSensitive: false }
+        : { ...baseCondition, urlFilter: from, isUrlFilterCaseSensitive: false };
+
+    out.push({ priority, action, condition });
   }
 
   return out;
@@ -505,7 +585,6 @@ async function buildConditions(
     if (
       requireScopeForSensitive &&
       hasSensitiveRules &&
-      profile.tabLockId === null &&
       isOverlyBroadUrlPattern(f.pattern, f.matchType)
     ) {
       warnings.push({
@@ -518,32 +597,23 @@ async function buildConditions(
     includeFilters.push(f);
   }
 
-  // Warn if Tab Lock is protecting sensitive rules without an explicit domain URL filter
-  if (
-    requireScopeForSensitive &&
-    hasSensitiveRules &&
-    profile.tabLockId !== null &&
-    !hasConcreteDomainScope(profile.urlFilters)
-  ) {
-    warnings.push({
-      profileId: profile.id,
-      message:
-        'Tab Lock scopes by tab only — consider adding a domain URL filter (e.g. *://*.corp.internal/*) so redirects on this tab do not receive sensitive headers.',
-    });
-  }
-
   const baseCondition = buildBaseCondition(profile, excludedRequestDomains);
-
   if (includeFilters.length === 0) {
     return [{ ...baseCondition, urlFilter: '*' }];
   }
 
+  const regexChecks = await Promise.all(
+    includeFilters.map((f) =>
+      f.matchType === 'regex' ? isRegexSupported(f.pattern.trim()) : Promise.resolve(true)
+    )
+  );
+
   const conditions: chrome.declarativeNetRequest.RuleCondition[] = [];
-  for (const f of includeFilters) {
+  for (let i = 0; i < includeFilters.length; i++) {
+    const f = includeFilters[i];
     const pattern = f.pattern.trim();
     if (f.matchType === 'regex') {
-      const supported = await isRegexSupported(pattern);
-      if (!supported) {
+      if (!regexChecks[i]) {
         warnings.push({
           profileId: profile.id,
           ruleId: f.id,
@@ -551,21 +621,144 @@ async function buildConditions(
         });
         continue;
       }
-      conditions.push({
-        ...baseCondition,
-        regexFilter: pattern,
-        isUrlFilterCaseSensitive: false,
-      });
+      conditions.push({ ...baseCondition, regexFilter: pattern, isUrlFilterCaseSensitive: false });
     } else {
-      conditions.push({
-        ...baseCondition,
-        urlFilter: pattern,
-        isUrlFilterCaseSensitive: false,
-      });
+      conditions.push({ ...baseCondition, urlFilter: pattern, isUrlFilterCaseSensitive: false });
     }
   }
 
   return conditions;
+}
+
+interface CompiledProfileIntermediate {
+  priority: number;
+  mergedReqHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[];
+  responseHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[];
+  cookieHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[];
+  separateCookieRuleNeeded: boolean;
+  queryTransform: chrome.declarativeNetRequest.QueryTransform | null;
+  conditions: chrome.declarativeNetRequest.RuleCondition[];
+  compiledRedirects: Array<Omit<chrome.declarativeNetRequest.Rule, 'id'>>;
+}
+
+async function compileProfileIntermediate(
+  profile: Profile,
+  priority: number,
+  requireScope: boolean,
+  isRegexSupported: RegexSupportChecker,
+  warnings: CompileWarning[]
+): Promise<CompiledProfileIntermediate | null> {
+  const scoped = hasSpecificScope(profile.urlFilters);
+  const { requestHeaders, cookieHeaders, responseHeaders, hasSensitiveCompiled } =
+    buildModifyHeaderInfos(profile, requireScope, scoped, warnings);
+  const { queryTransform, hasSensitiveQuery } = buildQueryTransform(
+    profile,
+    requireScope,
+    scoped,
+    warnings
+  );
+  const { includeFilters, excludedRequestDomains } = collectExcludedDomains(profile, warnings);
+
+  const hasCookieHeaderInReq = requestHeaders.some(
+    (h) => h.header.toLowerCase() === 'cookie'
+  );
+
+  const mergedReqHeaders =
+    !hasCookieHeaderInReq && cookieHeaders.length > 0
+      ? [...requestHeaders, ...cookieHeaders]
+      : requestHeaders;
+
+  const separateCookieRuleNeeded = hasCookieHeaderInReq && cookieHeaders.length > 0;
+  const compiledRedirects = await compileRedirectRulesForProfile(
+    profile,
+    excludedRequestDomains,
+    requireScope,
+    priority + 3,
+    warnings,
+    isRegexSupported
+  );
+
+  const hasRules =
+    mergedReqHeaders.length > 0 ||
+    responseHeaders.length > 0 ||
+    separateCookieRuleNeeded ||
+    queryTransform ||
+    compiledRedirects.length > 0;
+
+  if (!hasRules) return null;
+
+  let conditions: chrome.declarativeNetRequest.RuleCondition[] = [];
+  if (mergedReqHeaders.length > 0 || responseHeaders.length > 0 || separateCookieRuleNeeded || queryTransform) {
+    conditions = await buildConditions(
+      profile,
+      includeFilters,
+      excludedRequestDomains,
+      hasSensitiveCompiled || hasSensitiveQuery,
+      requireScope,
+      warnings,
+      isRegexSupported
+    );
+  }
+
+  return {
+    priority,
+    mergedReqHeaders,
+    responseHeaders,
+    cookieHeaders,
+    separateCookieRuleNeeded,
+    queryTransform,
+    conditions,
+    compiledRedirects,
+  };
+}
+
+function expandIntermediateRules(
+  item: CompiledProfileIntermediate,
+  getId: () => number,
+  outRules: chrome.declarativeNetRequest.Rule[]
+): void {
+  for (const condition of item.conditions) {
+    if (item.mergedReqHeaders.length > 0 || item.responseHeaders.length > 0) {
+      outRules.push({
+        id: getId(),
+        priority: item.priority,
+        action: {
+          type: 'modifyHeaders' as chrome.declarativeNetRequest.RuleActionType,
+          ...(item.mergedReqHeaders.length > 0 ? { requestHeaders: item.mergedReqHeaders } : {}),
+          ...(item.responseHeaders.length > 0 ? { responseHeaders: item.responseHeaders } : {}),
+        },
+        condition,
+      });
+    }
+
+    if (item.separateCookieRuleNeeded) {
+      outRules.push({
+        id: getId(),
+        priority: item.priority + 1,
+        action: {
+          type: 'modifyHeaders' as chrome.declarativeNetRequest.RuleActionType,
+          requestHeaders: item.cookieHeaders,
+        },
+        condition,
+      });
+    }
+
+    if (item.queryTransform) {
+      outRules.push({
+        id: getId(),
+        priority: item.priority + 2,
+        action: {
+          type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
+          redirect: { transform: { queryTransform: item.queryTransform } },
+        },
+        condition,
+      });
+    }
+  }
+
+  for (const redirRule of item.compiledRedirects) {
+    outRules.push({ id: getId(), ...redirRule });
+  }
 }
 
 export async function compileStateToDnrRules(
@@ -578,136 +771,34 @@ export async function compileStateToDnrRules(
   }
 
   const requireScope = state.security?.requireScopeForSensitive ?? true;
-
   const activeProfiles = state.multiProfileMode
     ? state.profiles.filter((p) => p.enabled).sort((a, b) => a.order - b.order)
     : state.profiles.filter((p) => p.id === state.activeProfileId && p.enabled);
 
+  const intermediates = await Promise.all(
+    activeProfiles.map((p, idx) => {
+      const priority = Math.max(1, 1000 - idx * 10);
+      return compileProfileIntermediate(p, priority, requireScope, isRegexSupported, warnings);
+    })
+  );
+
   const dynamicRules: chrome.declarativeNetRequest.Rule[] = [];
-  const sessionRules: chrome.declarativeNetRequest.Rule[] = [];
-
   let nextDynamicId = 1;
-  let nextSessionId = 1;
+  const getId = () => nextDynamicId++;
 
-  for (let idx = 0; idx < activeProfiles.length; idx++) {
-    const profile = activeProfiles[idx];
-    const priority = Math.max(1, 1000 - idx * 10);
-    const scoped = hasSpecificScope(profile.urlFilters, profile.tabLockId);
-
-    const { requestHeaders, cookieHeaders, responseHeaders, hasSensitiveCompiled } =
-      buildModifyHeaderInfos(profile, requireScope, scoped, warnings);
-    const { queryTransform, hasSensitiveQuery } = buildQueryTransform(
-      profile,
-      requireScope,
-      scoped,
-      warnings
-    );
-    const { includeFilters, excludedRequestDomains } = collectExcludedDomains(profile, warnings);
-
-    const hasCookieHeaderInReq = requestHeaders.some(
-      (h) => h.header.toLowerCase() === 'cookie'
-    );
-
-    const mergedReqHeaders =
-      !hasCookieHeaderInReq && cookieHeaders.length > 0
-        ? [...requestHeaders, ...cookieHeaders]
-        : requestHeaders;
-
-    const separateCookieRuleNeeded = hasCookieHeaderInReq && cookieHeaders.length > 0;
-    const compiledRedirects = await compileRedirectRulesForProfile(
-      profile,
-      excludedRequestDomains,
-      requireScope,
-      priority + 3,
-      warnings,
-      isRegexSupported
-    );
-
-    if (
-      mergedReqHeaders.length === 0 &&
-      responseHeaders.length === 0 &&
-      !separateCookieRuleNeeded &&
-      !queryTransform &&
-      compiledRedirects.length === 0
-    ) {
-      continue;
-    }
-
-    const isSession = profile.tabLockId !== null;
-    const targetList = isSession ? sessionRules : dynamicRules;
-
-    if (
-      mergedReqHeaders.length > 0 ||
-      responseHeaders.length > 0 ||
-      separateCookieRuleNeeded ||
-      queryTransform
-    ) {
-      const conditions = await buildConditions(
-        profile,
-        includeFilters,
-        excludedRequestDomains,
-        hasSensitiveCompiled || hasSensitiveQuery,
-        requireScope,
-        warnings,
-        isRegexSupported
-      );
-
-      for (const condition of conditions) {
-        if (mergedReqHeaders.length > 0 || responseHeaders.length > 0) {
-          const action: chrome.declarativeNetRequest.RuleAction = {
-            type: 'modifyHeaders' as chrome.declarativeNetRequest.RuleActionType,
-            ...(mergedReqHeaders.length > 0 ? { requestHeaders: mergedReqHeaders } : {}),
-            ...(responseHeaders.length > 0 ? { responseHeaders } : {}),
-          };
-          targetList.push({
-            id: isSession ? nextSessionId++ : nextDynamicId++,
-            priority,
-            action,
-            condition,
-          });
-        }
-
-        if (separateCookieRuleNeeded) {
-          targetList.push({
-            id: isSession ? nextSessionId++ : nextDynamicId++,
-            priority: priority + 1,
-            action: {
-              type: 'modifyHeaders' as chrome.declarativeNetRequest.RuleActionType,
-              requestHeaders: cookieHeaders,
-            },
-            condition,
-          });
-        }
-
-        if (queryTransform) {
-          targetList.push({
-            id: isSession ? nextSessionId++ : nextDynamicId++,
-            priority: priority + 2,
-            action: {
-              type: 'redirect' as chrome.declarativeNetRequest.RuleActionType,
-              redirect: { transform: { queryTransform } },
-            },
-            condition,
-          });
-        }
-      }
-    }
-
-    for (const redirRule of compiledRedirects) {
-      targetList.push({
-        id: isSession ? nextSessionId++ : nextDynamicId++,
-        ...redirRule,
-      });
+  for (const item of intermediates) {
+    if (item) {
+      expandIntermediateRules(item, getId, dynamicRules);
     }
   }
 
-  return { dynamicRules, sessionRules, warnings };
+  return { dynamicRules, sessionRules: [], warnings };
 }
 
 function wildcardToRegExp(pattern: string): RegExp {
   const escaped = pattern
-    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*/g, '.*');
+    .replace(/[.+?^${}()|[\]\\]/g, String.raw`\$&`)
+    .replaceAll('*', '.*');
   return new RegExp(`^${escaped}$`, 'i');
 }
 
@@ -739,8 +830,52 @@ function matchesDnrCondition(
   return true;
 }
 
+function formatTransformSummary(t: chrome.declarativeNetRequest.URLTransform): string {
+  const schemePart = t.scheme ? t.scheme + '://' : '';
+  const hostPart = t.host ?? '';
+  const portPart = t.port ? ':' + t.port : '';
+  const pathPart = t.path ?? '';
+  return `Host swap -> ${schemePart}${hostPart}${portPart}${pathPart}`;
+}
+
+function inspectMatchedRuleAction(
+  r: chrome.declarativeNetRequest.Rule,
+  reqSet: Set<string>,
+  respSet: Set<string>,
+  querySet: Set<string>
+): { hasCookies: boolean; redirectSummary: string | null } {
+  let hasCookies = false;
+  let redirectSummary: string | null = null;
+
+  for (const h of r.action.requestHeaders ?? []) {
+    if (h.header.toLowerCase() === 'cookie') hasCookies = true;
+    else reqSet.add(h.header);
+  }
+  for (const h of r.action.responseHeaders ?? []) {
+    respSet.add(h.header);
+  }
+
+  if (r.action.type === 'block') {
+    redirectSummary = 'Blocked request';
+  } else if (r.action.type === 'redirect' && r.action.redirect) {
+    const qt = r.action.redirect.transform?.queryTransform;
+    if (qt) {
+      for (const p of qt.addOrReplaceParams ?? []) querySet.add(p.key);
+      for (const k of qt.removeParams ?? []) querySet.add(`-${k}`);
+    } else if (r.action.redirect.url) {
+      redirectSummary = `Redirect -> ${r.action.redirect.url}`;
+    } else if (r.action.redirect.regexSubstitution) {
+      redirectSummary = `Regex redirect -> ${r.action.redirect.regexSubstitution}`;
+    } else if (r.action.redirect.transform) {
+      redirectSummary = formatTransformSummary(r.action.redirect.transform);
+    }
+  }
+
+  return { hasCookies, redirectSummary };
+}
+
 /**
- * Simulates the real DNR compiler output against a sample URL for the Scope Preview UI.
+ * Simulates the real DNR compiler output against a sample URL.
  */
 export async function simulateProfileForUrl(
   profile: Profile,
@@ -788,7 +923,6 @@ export async function simulateProfileForUrl(
       requireScopeForSensitive: requireScope,
       maskSecrets: true,
       presentationMode: false,
-      autoPauseMinutes: 60,
     },
     profiles: [profile],
   };
@@ -804,29 +938,9 @@ export async function simulateProfileForUrl(
   let redirectSummary: string | null = null;
 
   for (const r of matched) {
-    for (const h of r.action.requestHeaders ?? []) {
-      if (h.header.toLowerCase() === 'cookie') hasCookies = true;
-      else reqSet.add(h.header);
-    }
-    for (const h of r.action.responseHeaders ?? []) {
-      respSet.add(h.header);
-    }
-    if (r.action.type === 'block') {
-      redirectSummary = 'Blocked request';
-    } else if (r.action.type === 'redirect' && r.action.redirect) {
-      const qt = r.action.redirect.transform?.queryTransform;
-      if (qt) {
-        for (const p of qt.addOrReplaceParams ?? []) querySet.add(p.key);
-        for (const k of qt.removeParams ?? []) querySet.add(`-${k}`);
-      } else if (r.action.redirect.url) {
-        redirectSummary = `Redirect -> ${r.action.redirect.url}`;
-      } else if (r.action.redirect.regexSubstitution) {
-        redirectSummary = `Regex redirect -> ${r.action.redirect.regexSubstitution}`;
-      } else if (r.action.redirect.transform) {
-        const t = r.action.redirect.transform;
-        redirectSummary = `Host swap -> ${t.scheme ? `${t.scheme}://` : ''}${t.host ?? ''}${t.port ? `:${t.port}` : ''}${t.path ?? ''}`;
-      }
-    }
+    const res = inspectMatchedRuleAction(r, reqSet, respSet, querySet);
+    if (res.hasCookies) hasCookies = true;
+    if (res.redirectSummary) redirectSummary = res.redirectSummary;
   }
 
   return {
@@ -839,6 +953,29 @@ export async function simulateProfileForUrl(
     redirectSummary,
     warnings: compiled.warnings,
   };
+}
+
+function resolveSyncStatus(countMismatch: boolean, quotaTruncatedCount: number): 'error' | 'degraded' | 'ok' {
+  if (countMismatch) return 'error';
+  if (quotaTruncatedCount > 0) return 'degraded';
+  return 'ok';
+}
+
+function resolveSyncErrorMessage(
+  countMismatch: boolean,
+  expectedDynamic: number,
+  expectedSession: number,
+  actualDynamic: number,
+  actualSession: number,
+  quotaTruncatedCount: number
+): string | null {
+  if (countMismatch) {
+    return `Rule verification mismatch (expected ${expectedDynamic}/${expectedSession}, active ${actualDynamic}/${actualSession}).`;
+  }
+  if (quotaTruncatedCount > 0) {
+    return `${quotaTruncatedCount} rule(s) skipped due to Chrome DNR quota.`;
+  }
+  return null;
 }
 
 export async function syncDnrRules(state: ExtensionState): Promise<{
@@ -909,11 +1046,7 @@ export async function syncDnrRules(state: ExtensionState): Promise<{
     ).length;
 
     const health: SyncHealth = {
-      status: countMismatch
-        ? 'error'
-        : quotaTruncatedCount > 0
-          ? 'degraded'
-          : 'ok',
+      status: resolveSyncStatus(countMismatch, quotaTruncatedCount),
       lastSyncedAt: Date.now(),
       expectedDynamicCount: dynamicToAdd.length,
       actualDynamicCount: verifyDynamic.length,
@@ -923,11 +1056,14 @@ export async function syncDnrRules(state: ExtensionState): Promise<{
       regexRuleCount,
       quotaAvailableRegex: maxRegexRules,
       quotaTruncatedCount,
-      errorMessage: countMismatch
-        ? `Rule verification mismatch (expected ${dynamicToAdd.length}/${sessionToAdd.length}, active ${verifyDynamic.length}/${verifySession.length}).`
-        : quotaTruncatedCount > 0
-          ? `${quotaTruncatedCount} rule(s) skipped due to Chrome DNR quota.`
-          : null,
+      errorMessage: resolveSyncErrorMessage(
+        countMismatch,
+        dynamicToAdd.length,
+        sessionToAdd.length,
+        verifyDynamic.length,
+        verifySession.length,
+        quotaTruncatedCount
+      ),
     };
 
     if (chrome.storage?.session) {

@@ -9,10 +9,6 @@
       "type": "boolean",
       "title": "Enforce secret value masking in extension UI"
     },
-    "maxAutoPauseMinutes": {
-      "type": "integer",
-      "title": "Maximum allowed idle auto-pause timeout in minutes (1-1440)"
-    },
     "managedProfiles": {
       "type": "array",
       "title": "Admin-seeded read-only profiles",

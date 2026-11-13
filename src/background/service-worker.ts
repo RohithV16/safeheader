@@ -1,6 +1,5 @@
 import { appendAuditEvent, clearAuditLog } from '../shared/audit-log';
 import {
-  AUTO_PAUSE_ALARM_NAME,
   RECOVERY_NOTICE_SESSION_KEY,
   STORAGE_KEY,
 } from '../shared/constants';
@@ -19,10 +18,9 @@ import {
   normalizeState,
   saveState,
 } from '../shared/storage';
-import type { AuditEventType, ExtensionState } from '../shared/types';
+import type { AuditEventType, ExtensionState, SyncHealth } from '../shared/types';
 import { updateBadge } from './badge-manager';
 import { syncDnrRules } from './dnr-compiler';
-import { clearDeadTabLocks, handleTabRemoved } from './tab-lock-manager';
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let writeQueue: Promise<unknown> = Promise.resolve();
@@ -69,47 +67,64 @@ function enqueueWrite<T>(fn: () => Promise<T>): Promise<T> {
   return task;
 }
 
-/**
- * Computes remaining idle time from persisted `lastActivityAt` so SW wakes
- * do not reset the idle countdown (fixes P0-3).
- */
-export async function reconcileAutoPauseAlarm(state: ExtensionState): Promise<ExtensionState> {
-  if (!chrome.alarms) return state;
-  await chrome.alarms.clear(AUTO_PAUSE_ALARM_NAME);
+function computeDnrSignature(state: ExtensionState): string {
+  if (state.isPaused) {
+    return 'paused';
+  }
+  const activeProfiles = state.multiProfileMode
+    ? state.profiles.filter((p) => p.enabled).sort((a, b) => a.order - b.order)
+    : state.profiles.filter((p) => p.id === state.activeProfileId && p.enabled);
 
-  const minutes = state.security?.autoPauseMinutes ?? 0;
-  if (state.isPaused || minutes <= 0) {
-    return state;
+  const parts: string[] = [
+    String(state.isPaused),
+    String(state.multiProfileMode),
+    String(state.security?.requireScopeForSensitive),
+  ];
+
+  for (const p of activeProfiles) {
+    parts.push(`p:${p.id}:${p.order}:${p.enabled}`);
+    parts.push(`types:${p.resourceTypes.join(',')}`);
+    parts.push(`methods:${p.requestMethods.join(',')}`);
+    for (const f of p.urlFilters) {
+      if (f.enabled) parts.push(`f:${f.pattern}:${f.matchType}:${f.exclude}`);
+    }
+    for (const h of p.requestHeaders) {
+      if (h.enabled) parts.push(`req:${h.name}:${h.operation}:${h.value}`);
+    }
+    for (const h of p.responseHeaders) {
+      if (h.enabled) parts.push(`resp:${h.name}:${h.operation}:${h.value}`);
+    }
+    for (const c of p.cookies) {
+      if (c.enabled) parts.push(`c:${c.name}:${c.mode}:${c.value}`);
+    }
+    for (const q of p.queryParams ?? []) {
+      if (q.enabled) parts.push(`q:${q.name}:${q.operation}:${q.value}:${q.replaceOnly}`);
+    }
+    for (const r of p.redirects ?? []) {
+      if (r.enabled) parts.push(`r:${r.fromPattern}:${r.toUrl}:${r.mode}:${r.matchType}`);
+    }
   }
 
-  const thresholdMs = minutes * 60_000;
-  const elapsed = Date.now() - (state.lastActivityAt || Date.now());
-  const remaining = thresholdMs - elapsed;
-
-  if (remaining <= 0) {
-    const pausedState: ExtensionState = {
-      ...state,
-      isPaused: true,
-      pausedReason: 'auto',
-    };
-    await persistFromSw(pausedState);
-    await appendAuditEvent('AUTO_PAUSE', `Auto-paused after ${minutes}m idle`);
-    return pausedState;
-  }
-
-  chrome.alarms.create(AUTO_PAUSE_ALARM_NAME, {
-    when: Date.now() + remaining,
-  });
-  return state;
+  return parts.join('|');
 }
 
-async function syncState(rawState: ExtensionState): Promise<void> {
+let lastDnrSignature = '';
+let lastSyncHealth: SyncHealth | undefined;
+
+async function syncState(rawState: ExtensionState, forceDnr = false): Promise<void> {
   const policy = await loadManagedPolicy();
   const effectiveState = applyManagedPolicyToState(rawState, policy);
-  const checkedState = await reconcileAutoPauseAlarm(effectiveState);
 
-  const { health } = await syncDnrRules(checkedState);
-  await updateBadge(checkedState, health);
+  const currentSignature = computeDnrSignature(effectiveState);
+  if (!forceDnr && currentSignature === lastDnrSignature && lastSyncHealth) {
+    await updateBadge(effectiveState, lastSyncHealth);
+    return;
+  }
+
+  const { health } = await syncDnrRules(effectiveState);
+  lastDnrSignature = currentSignature;
+  lastSyncHealth = health;
+  await updateBadge(effectiveState, health);
 
   if (health.status === 'error') {
     await appendAuditEvent('SYNC_ERROR', health.errorMessage ?? 'DNR sync failed');
@@ -118,7 +133,7 @@ async function syncState(rawState: ExtensionState): Promise<void> {
   }
 }
 
-async function syncAll(checkDeadTabs = false): Promise<void> {
+async function syncAll(forceDnr = false): Promise<void> {
   const { state, recoveredFromBackup } = await loadStateWithRecovery();
   if (recoveredFromBackup) {
     await appendAuditEvent('BACKUP_RESTORED', 'Recovered corrupt state from local .bak');
@@ -129,24 +144,20 @@ async function syncAll(checkDeadTabs = false): Promise<void> {
       });
     }
   }
-  const cleanState = checkDeadTabs ? await clearDeadTabLocks(state) : state;
-  await syncState(cleanState);
+  await syncState(state, forceDnr);
 }
 
-function scheduleSync(checkDeadTabs = false): void {
+function scheduleSync(): void {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     syncTimer = null;
-    void enqueueWrite(() => syncAll(checkDeadTabs)).catch((err) => {
+    void enqueueWrite(() => syncAll()).catch((err) => {
       console.error('[SafeHeader] Sync error:', err instanceof Error ? err.message : 'unknown');
     });
   }, 40);
 }
 
 async function wipeAllLocalData(): Promise<void> {
-  if (chrome.alarms) {
-    await chrome.alarms.clearAll();
-  }
   await chrome.storage.local.clear();
   await clearAuditLog();
   if (chrome.storage?.session) {
@@ -161,15 +172,15 @@ async function wipeAllLocalData(): Promise<void> {
 async function wipeEphemeralSecrets(): Promise<void> {
   await clearEphemeralSecrets();
   await appendAuditEvent('EPHEMERAL_WIPED', 'Cleared RAM-only ephemeral secret values');
-  await syncAll(false);
+  await syncAll();
 }
 
 chrome.runtime.onInstalled.addListener(() => {
-  void enqueueWrite(() => syncAll(true));
+  void enqueueWrite(() => syncAll());
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  void enqueueWrite(() => syncAll(true));
+  void enqueueWrite(() => syncAll());
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -192,33 +203,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     }, 40);
   }
   if (areaName === 'managed') {
-    void enqueueWrite(() => syncAll(false));
+    void enqueueWrite(() => syncAll());
   }
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === AUTO_PAUSE_ALARM_NAME) {
-    void enqueueWrite(async () => {
-      const { state } = await loadStateWithRecovery();
-      if (!state.isPaused) {
-        const next: ExtensionState = {
-          ...state,
-          isPaused: true,
-          pausedReason: 'auto',
-        };
-        await persistFromSw(next);
-        await appendAuditEvent(
-          'AUTO_PAUSE',
-          `Auto-paused after ${state.security.autoPauseMinutes}m idle`
-        );
-        await syncState(next);
-      }
-    });
-  }
-});
-
-chrome.tabs.onRemoved.addListener((tabId) => {
-  void enqueueWrite(() => handleTabRemoved(tabId));
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -244,8 +230,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (
         prev.security.requireScopeForSensitive !== next.security.requireScopeForSensitive ||
         prev.security.maskSecrets !== next.security.maskSecrets ||
-        prev.security.presentationMode !== next.security.presentationMode ||
-        prev.security.autoPauseMinutes !== next.security.autoPauseMinutes
+        prev.security.presentationMode !== next.security.presentationMode
       ) {
         await appendAuditEvent('SECURITY_CHANGED', 'Updated local security controls');
       }
@@ -274,7 +259,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'FORCE_SYNC') {
-    void enqueueWrite(() => syncAll(false))
+    void enqueueWrite(() => syncAll(true))
       .then(() => sendResponse({ ok: true }))
       .catch((err) => sendResponse({ ok: false, error: String(err) }));
     return true;
@@ -305,4 +290,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-scheduleSync(false);
+scheduleSync();

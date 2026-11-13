@@ -13,8 +13,6 @@ export interface SecuritySettings {
   maskSecrets: boolean;
   /** Force-mask all values and block reveal during screen sharing. */
   presentationMode: boolean;
-  /** Automatically pause all modifications after N minutes of inactivity (0 = disabled). */
-  autoPauseMinutes: number;
 }
 
 export interface HeaderRule {
@@ -131,7 +129,6 @@ export interface ManagedPolicy {
   hasPolicy: boolean;
   enforceScopeForSensitive: boolean;
   enforceMaskSecrets: boolean;
-  maxAutoPauseMinutes: number | null;
   managedProfiles: Profile[];
 }
 

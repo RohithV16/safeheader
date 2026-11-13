@@ -84,6 +84,16 @@ function safeJsonParse(jsonText: string): unknown {
   });
 }
 
+function resolveHeaderOperation(
+  operation: unknown,
+  defaultAppend: boolean
+): HeaderOperation {
+  if (operation === 'set' || operation === 'append' || operation === 'remove') {
+    return operation;
+  }
+  return defaultAppend ? 'append' : 'set';
+}
+
 function normalizeHeaderList(
   list: ModHeaderLegacyHeader[] | undefined,
   defaultAppend: boolean,
@@ -92,14 +102,7 @@ function normalizeHeaderList(
   if (!Array.isArray(list)) return [];
   return list.slice(0, MAX_RULES_PER_SECTION).map((item) => {
     const name = String(item?.name ?? '').trim().slice(0, 256);
-    let operation: HeaderOperation =
-      item?.operation === 'set' ||
-      item?.operation === 'append' ||
-      item?.operation === 'remove'
-        ? item.operation
-        : defaultAppend
-          ? 'append'
-          : 'set';
+    let operation = resolveHeaderOperation(item?.operation, defaultAppend);
     if (
       target === 'request' &&
       operation === 'append' &&
@@ -153,21 +156,27 @@ function normalizeFilterList(list: ModHeaderLegacyFilter[] | undefined): UrlFilt
     .filter((f) => f.pattern.length > 0);
 }
 
+function extractRawProfileList(parsed: unknown): unknown[] {
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (parsed && typeof parsed === 'object') {
+    const candidate = parsed as { profiles?: unknown };
+    if (Array.isArray(candidate.profiles)) {
+      return candidate.profiles;
+    }
+    return [parsed];
+  }
+  return [];
+}
+
 /**
  * Local-only hardened importer for migrating existing ModHeader JSON configurations.
  * Export is intentionally disabled in this corporate build to prevent secret exfiltration.
  */
 export function importProfilesFromJson(jsonText: string, startOrder = 0): Profile[] {
   const parsed = safeJsonParse(jsonText);
-  const rawList = Array.isArray(parsed)
-    ? parsed
-    : parsed &&
-        typeof parsed === 'object' &&
-        Array.isArray((parsed as { profiles?: unknown }).profiles)
-      ? (parsed as { profiles: unknown[] }).profiles
-      : parsed && typeof parsed === 'object'
-        ? [parsed]
-        : [];
+  const rawList = extractRawProfileList(parsed);
 
   if (rawList.length === 0) {
     throw new Error('JSON must contain a profile object or an array of profiles.');

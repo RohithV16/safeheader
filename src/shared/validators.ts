@@ -95,14 +95,13 @@ export function extractRegistrableDomain(
   }
 
   // Regex: require explicit scheme + concrete escaped/literal hostname before path/end
-  const regexMatch = trimmed.match(
-    /^\^?(?:https?|https\?|\(\?:https\?\)|\(http\|https\)):\/\/([^\/\s$]+)/i
-  );
+  const hostRegex = /^\^?(?:https?|https\?|\(\?:https\?\)|\(http\|https\)):\/\/([^/\s$]+)/i;
+  const regexMatch = hostRegex.exec(trimmed);
   if (!regexMatch) return null;
 
   let hostExpr = regexMatch[1]
     .split(':')[0]
-    .replace(/\\\./g, '.')
+    .replaceAll('\\.', '.')
     .replace(/^\(\?:[^)]*\*\)\./, '')
     .replace(/^\[\^\/\]+[*+]?\./, '')
     .replace(/^\.\*\./, '');
@@ -136,9 +135,9 @@ export function hasConcreteDomainScope(urlFilters: UrlFilterRule[]): boolean {
 
 export function hasSpecificScope(
   urlFilters: UrlFilterRule[],
-  tabLockId: number | null
+  tabLockId?: number | null
 ): boolean {
-  if (tabLockId !== null) return true;
+  if (tabLockId !== null && tabLockId !== undefined) return true;
   return hasConcreteDomainScope(urlFilters);
 }
 

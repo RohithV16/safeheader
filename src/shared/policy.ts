@@ -7,7 +7,6 @@ export function createEmptyManagedPolicy(): ManagedPolicy {
     hasPolicy: false,
     enforceScopeForSensitive: false,
     enforceMaskSecrets: false,
-    maxAutoPauseMinutes: null,
     managedProfiles: [],
   };
 }
@@ -21,7 +20,6 @@ export function parseManagedPolicy(raw: unknown): ManagedPolicy {
   const hasAnyKey =
     'enforceScopeForSensitive' in obj ||
     'enforceMaskSecrets' in obj ||
-    'maxAutoPauseMinutes' in obj ||
     'managedProfiles' in obj;
 
   let managedProfiles: Profile[] = [];
@@ -42,19 +40,10 @@ export function parseManagedPolicy(raw: unknown): ManagedPolicy {
     }
   }
 
-  const maxAutoPauseMinutes =
-    typeof obj.maxAutoPauseMinutes === 'number' &&
-    Number.isFinite(obj.maxAutoPauseMinutes) &&
-    obj.maxAutoPauseMinutes >= 1 &&
-    obj.maxAutoPauseMinutes <= 1440
-      ? Math.round(obj.maxAutoPauseMinutes)
-      : null;
-
   return {
     hasPolicy: hasAnyKey,
     enforceScopeForSensitive: Boolean(obj.enforceScopeForSensitive),
     enforceMaskSecrets: Boolean(obj.enforceMaskSecrets),
-    maxAutoPauseMinutes,
     managedProfiles,
   };
 }
@@ -67,7 +56,6 @@ export async function loadManagedPolicy(): Promise<ManagedPolicy> {
     const raw = await chrome.storage.managed.get([
       'enforceScopeForSensitive',
       'enforceMaskSecrets',
-      'maxAutoPauseMinutes',
       'managedProfiles',
     ]);
     return parseManagedPolicy(raw);
@@ -80,20 +68,12 @@ export function clampSecurityWithPolicy(
   security: SecuritySettings,
   policy: ManagedPolicy
 ): SecuritySettings {
-  const autoPauseMinutes =
-    policy.maxAutoPauseMinutes !== null
-      ? security.autoPauseMinutes === 0 || security.autoPauseMinutes > policy.maxAutoPauseMinutes
-        ? policy.maxAutoPauseMinutes
-        : security.autoPauseMinutes
-      : security.autoPauseMinutes;
-
   return {
     requireScopeForSensitive: policy.enforceScopeForSensitive
       ? true
       : security.requireScopeForSensitive,
     maskSecrets: policy.enforceMaskSecrets ? true : security.maskSecrets,
     presentationMode: security.presentationMode,
-    autoPauseMinutes,
   };
 }
 

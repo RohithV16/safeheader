@@ -76,9 +76,8 @@ describe('compileStateToDnrRules', () => {
     ]);
   });
 
-  it('uses replace mode for cookies when any replace cookie is enabled (with tabLock)', async () => {
+  it('uses replace mode for cookies when any replace cookie is enabled', async () => {
     const state = createDefaultState();
-    state.profiles[0].tabLockId = 42;
     state.profiles[0].requestHeaders = [];
     state.profiles[0].cookies = [
       { id: 'c1', enabled: true, name: 'session', value: 'xyz', mode: 'replace' },
@@ -86,10 +85,8 @@ describe('compileStateToDnrRules', () => {
     ];
 
     const compiled = await compileStateToDnrRules(state);
-    expect(compiled.dynamicRules).toHaveLength(0);
-    expect(compiled.sessionRules).toHaveLength(1);
-    expect(compiled.sessionRules[0].condition.tabIds).toEqual([42]);
-    expect(compiled.sessionRules[0].action.requestHeaders).toEqual([
+    expect(compiled.dynamicRules).toHaveLength(1);
+    expect(compiled.dynamicRules[0].action.requestHeaders).toEqual([
       { header: 'Cookie', operation: 'set', value: 'session=xyz; flag=true' },
     ]);
   });
@@ -124,7 +121,6 @@ describe('compileStateToDnrRules', () => {
         requireScopeForSensitive: true,
         maskSecrets: true,
         presentationMode: false,
-        autoPauseMinutes: 60,
       },
       profiles: [p1, p2],
     };

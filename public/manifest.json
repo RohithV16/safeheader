@@ -41,8 +41,7 @@
     "declarativeNetRequestWithHostAccess",
     "storage",
     "activeTab",
-    "sidePanel",
-    "alarms"
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"

@@ -25,10 +25,17 @@ import type {
 } from './types';
 
 export function generateId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
+  if (typeof crypto !== 'undefined') {
+    if (typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto.getRandomValues === 'function') {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
   }
-  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+  return `id-${Date.now().toString(36)}-fallback`;
 }
 
 export function createDefaultSecuritySettings(): SecuritySettings {
@@ -36,11 +43,17 @@ export function createDefaultSecuritySettings(): SecuritySettings {
     requireScopeForSensitive: false,
     maskSecrets: true,
     presentationMode: false,
-    autoPauseMinutes: 60,
   };
 }
 
-export function createEmptyHeaderRule(): HeaderRule {
+function createBasicNamedRule(): {
+  id: string;
+  enabled: boolean;
+  name: string;
+  value: string;
+  operation: 'set';
+  comment: string;
+} {
   return {
     id: generateId(),
     enabled: true,
@@ -49,6 +62,10 @@ export function createEmptyHeaderRule(): HeaderRule {
     operation: 'set',
     comment: '',
   };
+}
+
+export function createEmptyHeaderRule(): HeaderRule {
+  return createBasicNamedRule();
 }
 
 export function createEmptyCookieRule(): CookieRule {
@@ -74,14 +91,7 @@ export function createEmptyUrlFilterRule(): UrlFilterRule {
 }
 
 export function createEmptyQueryParamRule(): QueryParamRule {
-  return {
-    id: generateId(),
-    enabled: true,
-    name: '',
-    value: '',
-    operation: 'set',
-    comment: '',
-  };
+  return createBasicNamedRule();
 }
 
 export function createEmptyRedirectRule(): RedirectRule {
@@ -116,6 +126,29 @@ export function createDefaultProfile(index = 1): Profile {
     queryParams: [],
     redirects: [],
   };
+}
+
+export function findNextAvailableProfileIndex(profiles: ReadonlyArray<Profile>): number {
+  const usedNumbers = new Set<number>();
+  for (const p of profiles) {
+    const shortNum = parseInt(p.shortTitle.trim(), 10);
+    if (!Number.isNaN(shortNum) && shortNum > 0) {
+      usedNumbers.add(shortNum);
+    }
+    const match = /^Profile\s+(\d+)$/i.exec(p.title.trim());
+    if (match) {
+      const titleNum = parseInt(match[1], 10);
+      if (!Number.isNaN(titleNum) && titleNum > 0) {
+        usedNumbers.add(titleNum);
+      }
+    }
+  }
+
+  let candidate = 1;
+  while (usedNumbers.has(candidate)) {
+    candidate += 1;
+  }
+  return candidate;
 }
 
 export function createDefaultState(): ExtensionState {
@@ -225,13 +258,6 @@ function sanitizeSecuritySettings(raw: unknown): SecuritySettings {
   const defaults = createDefaultSecuritySettings();
   if (!raw || typeof raw !== 'object') return defaults;
   const s = raw as Partial<SecuritySettings>;
-  const autoPause =
-    typeof s.autoPauseMinutes === 'number' &&
-    Number.isFinite(s.autoPauseMinutes) &&
-    s.autoPauseMinutes >= 0 &&
-    s.autoPauseMinutes <= 1440
-      ? Math.round(s.autoPauseMinutes)
-      : defaults.autoPauseMinutes;
 
   return {
     requireScopeForSensitive:
@@ -241,7 +267,6 @@ function sanitizeSecuritySettings(raw: unknown): SecuritySettings {
     maskSecrets:
       typeof s.maskSecrets === 'boolean' ? s.maskSecrets : defaults.maskSecrets,
     presentationMode: Boolean(s.presentationMode),
-    autoPauseMinutes: autoPause,
   };
 }
 
@@ -265,6 +290,20 @@ function migrateRawState(raw: Record<string, unknown>): Record<string, unknown> 
   return current;
 }
 
+function normalizePausedReason(isPaused: boolean, reason: unknown): 'manual' | 'auto' | null {
+  if (!isPaused) {
+    return null;
+  }
+  return reason === 'auto' ? 'auto' : 'manual';
+}
+
+function normalizeTabLockId(tabLockId: unknown): number | null {
+  if (typeof tabLockId === 'number' && Number.isInteger(tabLockId) && tabLockId > 0) {
+    return tabLockId;
+  }
+  return null;
+}
+
 export function normalizeState(raw: unknown): ExtensionState {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return createDefaultState();
@@ -285,7 +324,7 @@ export function normalizeState(raw: unknown): ExtensionState {
                 ? p.title.slice(0, 80)
                 : `Profile ${idx + 1}`,
             shortTitle:
-              typeof p.shortTitle === 'string' && p.shortTitle
+              typeof p.shortTitle === 'string'
                 ? p.shortTitle.slice(0, 3)
                 : String(idx + 1),
             color:
@@ -311,10 +350,7 @@ export function normalizeState(raw: unknown): ExtensionState {
                   .map((m) => m.toLowerCase())
                   .filter((m) => VALID_HTTP_METHODS.has(m))
               : [],
-            tabLockId:
-              typeof p.tabLockId === 'number' && Number.isInteger(p.tabLockId) && p.tabLockId > 0
-                ? p.tabLockId
-                : null,
+            tabLockId: normalizeTabLockId(p.tabLockId),
             queryParams: sanitizeQueryParamRules(p.queryParams),
             redirects: sanitizeRedirectRules(p.redirects),
           }))
@@ -326,12 +362,7 @@ export function normalizeState(raw: unknown): ExtensionState {
   return {
     schemaVersion: 1,
     isPaused: Boolean(candidate.isPaused),
-    pausedReason:
-      candidate.isPaused
-        ? candidate.pausedReason === 'auto'
-          ? 'auto'
-          : 'manual'
-        : null,
+    pausedReason: normalizePausedReason(Boolean(candidate.isPaused), candidate.pausedReason),
     lastActivityAt:
       typeof candidate.lastActivityAt === 'number' &&
       Number.isFinite(candidate.lastActivityAt) &&

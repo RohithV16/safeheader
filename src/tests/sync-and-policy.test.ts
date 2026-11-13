@@ -38,7 +38,6 @@ describe('SyncHealth verification, quota truncation, policy clamping & audit log
     const policy = parseManagedPolicy({
       enforceScopeForSensitive: true,
       enforceMaskSecrets: true,
-      maxAutoPauseMinutes: 30,
       managedProfiles: [
         {
           title: 'Corp SSO Headers',
@@ -51,12 +50,10 @@ describe('SyncHealth verification, quota truncation, policy clamping & audit log
     const state = createDefaultState();
     state.security.requireScopeForSensitive = false;
     state.security.maskSecrets = false;
-    state.security.autoPauseMinutes = 0;
 
     const effective = applyManagedPolicyToState(state, policy);
     expect(effective.security.requireScopeForSensitive).toBe(true);
     expect(effective.security.maskSecrets).toBe(true);
-    expect(effective.security.autoPauseMinutes).toBe(30);
     expect(effective.profiles[0].isManaged).toBe(true);
     expect(effective.profiles[0].title).toBe('Corp SSO Headers');
   });
