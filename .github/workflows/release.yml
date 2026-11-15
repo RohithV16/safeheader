@@ -85,12 +85,22 @@ jobs:
             release/safeheader-v*.zip
             release/SHA256SUMS.txt
           body: |
-            ## Install in Google Chrome / Chromium
-            1. Download `safeheader-v${{ steps.bump.outputs.version }}-chrome.zip` from **Assets** below and unzip it.
-            2. Navigate to `chrome://extensions` in Chrome and enable **Developer mode** (top right toggle).
-            3. Click **Load unpacked** and select the unzipped directory.
+            ### Installation Instructions
 
-            ## Install in Mozilla Firefox
-            1. Download `safeheader-v${{ steps.bump.outputs.version }}-firefox.zip` from **Assets** below and unzip it.
-            2. Navigate to `about:debugging#/runtime/this-firefox` in Firefox.
-            3. Click **Load Temporary Add-on...** and select `manifest.json` inside the unzipped directory.
+            #### Google Chrome / Chromium (Edge, Brave, Arc, Opera)
+            1. **Download the ZIP:** Download `safeheader-v${{ steps.bump.outputs.version }}-chrome.zip` from the **Assets** section below.
+            2. **Extract the ZIP:** Extract / unzip the archive into a folder on your computer. Inside you will find `manifest.json` at the root.
+            3. **Open Extensions Manager:** Open Chrome and navigate to `chrome://extensions` in the address bar.
+            4. **Enable Developer Mode:** Turn **ON** the **Developer mode** toggle in the top-right corner.
+            5. **Load Unpacked Extension:** Click the **Load unpacked** button in the top-left toolbar and select your extracted folder.
+            6. **Pin & Use:** Pin SafeHeader from the extensions menu (puzzle-piece icon) or open it in the Side Panel.
+
+            #### Mozilla Firefox
+            1. **Download the ZIP:** Download `safeheader-v${{ steps.bump.outputs.version }}-firefox.zip` from the **Assets** section below.
+            2. **Extract the ZIP:** Extract / unzip the archive to a local directory on your machine.
+            3. **Open Debugging:** Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
+            4. **Load Temporary Add-on:** Click **Load Temporary Add-on...** and select the `manifest.json` file inside the extracted directory.
+            5. **Pin & Use:** Open SafeHeader from the toolbar or via the native Firefox Sidebar (`Cmd+B` / `Ctrl+B`).
+
+            ---
+            📖 **Live Documentation & Visual Guide:** https://rohithv16.github.io/safeheader/

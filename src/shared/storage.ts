@@ -43,6 +43,7 @@ export function createDefaultSecuritySettings(): SecuritySettings {
     requireScopeForSensitive: false,
     maskSecrets: true,
     presentationMode: false,
+    enableEphemeralSecrets: false,
   };
 }
 
@@ -115,7 +116,7 @@ export function createDefaultProfile(index = 1): Profile {
     color,
     enabled: true,
     order: index - 1,
-    hideComment: false,
+    hideComment: true,
     requestHeaders: [],
     responseHeaders: [],
     cookies: [],
@@ -267,6 +268,7 @@ function sanitizeSecuritySettings(raw: unknown): SecuritySettings {
     maskSecrets:
       typeof s.maskSecrets === 'boolean' ? s.maskSecrets : defaults.maskSecrets,
     presentationMode: Boolean(s.presentationMode),
+    enableEphemeralSecrets: Boolean(s.enableEphemeralSecrets),
   };
 }
 
@@ -333,7 +335,7 @@ export function normalizeState(raw: unknown): ExtensionState {
                 : PROFILE_COLORS[idx % PROFILE_COLORS.length],
             enabled: typeof p.enabled === 'boolean' ? p.enabled : true,
             order: typeof p.order === 'number' ? p.order : idx,
-            hideComment: Boolean(p.hideComment),
+            hideComment: typeof p.hideComment === 'boolean' ? p.hideComment : true,
             requestHeaders: sanitizeHeaderRules(p.requestHeaders),
             responseHeaders: sanitizeHeaderRules(p.responseHeaders),
             cookies: sanitizeCookieRules(p.cookies),

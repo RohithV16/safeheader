@@ -246,22 +246,21 @@ function AppBanners({
   );
 }
 
-function reorderRuleInProfile<
+function moveRuleInProfile<
   K extends 'requestHeaders' | 'responseHeaders' | 'cookies' | 'queryParams' | 'redirects'
 >(
   profile: Profile,
   key: K,
   fromIndex: number,
-  offset: number
+  toIndex: number
 ): Profile {
   const list = profile[key] as unknown[];
-  const targetIndex = fromIndex + offset;
-  if (!list || targetIndex < 0 || targetIndex >= list.length || fromIndex === targetIndex) {
+  if (!list || fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length || fromIndex === toIndex) {
     return profile;
   }
   const copy = [...list];
   const [item] = copy.splice(fromIndex, 1);
-  copy.splice(targetIndex, 0, item);
+  copy.splice(toIndex, 0, item);
   return { ...profile, [key]: copy };
 }
 
@@ -545,20 +544,17 @@ export function App({ surface }: AppProps) {
                   key={rule.id}
                   rule={rule}
                   target="request"
+                  index={idx}
                   hideComment={activeProfile.hideComment}
                   maskSecrets={state.security.maskSecrets}
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   datalistId="req-header-suggestions"
-                  canMoveUp={idx > 0}
-                  canMoveDown={idx < reqHeaders.length - 1}
-                  onMoveUp={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'requestHeaders', idx, -1))
-                  }
-                  onMoveDown={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'requestHeaders', idx, 1))
+                  onMoveRule={(from, to) =>
+                    updateActiveProfile((p) => moveRuleInProfile(p, 'requestHeaders', from, to))
                   }
                   onChange={(next) =>
                     updateActiveProfile((p) => ({
@@ -592,20 +588,17 @@ export function App({ surface }: AppProps) {
                   key={rule.id}
                   rule={rule}
                   target="response"
+                  index={idx}
                   hideComment={activeProfile.hideComment}
                   maskSecrets={state.security.maskSecrets}
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   datalistId="resp-header-suggestions"
-                  canMoveUp={idx > 0}
-                  canMoveDown={idx < respHeaders.length - 1}
-                  onMoveUp={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'responseHeaders', idx, -1))
-                  }
-                  onMoveDown={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'responseHeaders', idx, 1))
+                  onMoveRule={(from, to) =>
+                    updateActiveProfile((p) => moveRuleInProfile(p, 'responseHeaders', from, to))
                   }
                   onChange={(next) =>
                     updateActiveProfile((p) => ({
@@ -640,19 +633,16 @@ export function App({ surface }: AppProps) {
                 <CookieRow
                   key={rule.id}
                   rule={rule}
+                  index={idx}
                   hideComment={activeProfile.hideComment}
                   maskSecrets={state.security.maskSecrets}
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
-                  canMoveUp={idx > 0}
-                  canMoveDown={idx < cookies.length - 1}
-                  onMoveUp={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'cookies', idx, -1))
-                  }
-                  onMoveDown={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'cookies', idx, 1))
+                  onMoveRule={(from, to) =>
+                    updateActiveProfile((p) => moveRuleInProfile(p, 'cookies', from, to))
                   }
                   onChange={(next) =>
                     updateActiveProfile((p) => ({
@@ -683,19 +673,16 @@ export function App({ surface }: AppProps) {
                 <QueryParamRow
                   key={rule.id}
                   rule={rule}
+                  index={idx}
                   hideComment={activeProfile.hideComment}
                   maskSecrets={state.security.maskSecrets}
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
-                  canMoveUp={idx > 0}
-                  canMoveDown={idx < queryParams.length - 1}
-                  onMoveUp={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'queryParams', idx, -1))
-                  }
-                  onMoveDown={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'queryParams', idx, 1))
+                  onMoveRule={(from, to) =>
+                    updateActiveProfile((p) => moveRuleInProfile(p, 'queryParams', from, to))
                   }
                   onChange={(next) =>
                     updateActiveProfile((p) => ({
@@ -728,17 +715,13 @@ export function App({ surface }: AppProps) {
                 <RedirectRow
                   key={rule.id}
                   rule={rule}
+                  index={idx}
                   hideComment={activeProfile.hideComment}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
                   readOnly={readOnly}
                   currentTabOriginPattern={currentTabOriginPattern}
-                  canMoveUp={idx > 0}
-                  canMoveDown={idx < redirects.length - 1}
-                  onMoveUp={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'redirects', idx, -1))
-                  }
-                  onMoveDown={() =>
-                    updateActiveProfile((p) => reorderRuleInProfile(p, 'redirects', idx, 1))
+                  onMoveRule={(from, to) =>
+                    updateActiveProfile((p) => moveRuleInProfile(p, 'redirects', from, to))
                   }
                   onChange={(next) =>
                     updateActiveProfile((p) => ({

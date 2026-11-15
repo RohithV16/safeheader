@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeHeader — Local-Only HTTP Header &amp; Traffic Engine</title>
-  <meta name="description" content="A hardened, 100% local Chrome &amp; Firefox extension to modify HTTP headers, request cookies, query parameters, and redirects with zero data export.">
+  <meta name="description" content="A hardened, 100% local Chrome &amp; Firefox extension to modify HTTP headers, request cookies, query parameters, and redirects locally with zero network telemetry.">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 </head>
@@ -41,16 +41,17 @@
     <div class="container">
       <div class="hero-pill">Corporate Security Edition &bull; Chrome &amp; Firefox MV3</div>
       <h1 class="hero-title">
-        The 100% Local, Zero-Export <span class="gradient-text">HTTP Header &amp; Traffic Engine</span>
+        The 100% Local <span class="gradient-text">HTTP Header &amp; Traffic Engine</span>
       </h1>
       <p class="hero-desc">
-        A security-hardened browser extension for developers and security teams. Modify HTTP request/response headers, request cookies, query parameters, and redirects locally with zero network telemetry and zero data export.
+        A security-hardened browser extension for developers and security teams. Modify HTTP request/response headers, request cookies, query parameters, and redirects locally with zero network telemetry.
       </p>
 
       <div class="hero-badges">
         <span class="badge badge-emerald">✓ 100% Local Storage</span>
         <span class="badge">✓ Zero Telemetry</span>
         <span class="badge">✓ Strict Scope Guard</span>
+        <span class="badge">✓ RAM-Only Session Secrets (⚡)</span>
         <span class="badge">✓ Chrome 113+ &amp; Firefox 115+</span>
       </div>
 
@@ -73,8 +74,12 @@
       <!-- Core Feature Cards -->
       <div class="overview-grid">
         <div class="overview-card">
-          <h4>100% Local &amp; Zero Export</h4>
-          <p>Profiles and rules stay strictly in local storage. Profile export and telemetry are disabled to protect credentials from exfiltration.</p>
+          <h4>100% Local Storage</h4>
+          <p>Profiles and rules stay strictly in browser local storage. Zero network telemetry protects credentials from exfiltration.</p>
+        </div>
+        <div class="overview-card">
+          <h4>RAM-Only Session Secrets (⚡)</h4>
+          <p>Toggle ephemeral mode on any rule to store tokens exclusively in volatile memory. Secrets never touch disk and auto-purge when the browser closes.</p>
         </div>
         <div class="overview-card">
           <h4>Strict Scope Guard</h4>
@@ -124,29 +129,43 @@
             <div class="step-item">
               <div class="step-num">1</div>
               <div class="step-content">
-                <h5>Download and Unzip</h5>
-                <p>Download the latest Chrome zip release (<code class="code-inline">safeheader-*-chrome.zip</code>) from GitHub Releases and extract it into a folder on your computer.</p>
+                <h5>Download the ZIP</h5>
+                <p>Click the <strong>Download Latest Chrome Package</strong> button above (or download from GitHub Releases) to save the zip file to your machine.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">2</div>
               <div class="step-content">
-                <h5>Open Chrome Extensions</h5>
-                <p>Open Chrome and navigate to <code class="code-inline">chrome://extensions</code> in your address bar.</p>
+                <h5>Extract the ZIP</h5>
+                <p>Unzip / extract the downloaded archive into a folder on your computer. Inside, you will see the extension files with <code class="code-inline">manifest.json</code> at the root.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">3</div>
               <div class="step-content">
-                <h5>Enable Developer Mode</h5>
-                <p>Turn on the <strong>Developer mode</strong> toggle located in the top-right corner.</p>
+                <h5>Open Chrome Extensions</h5>
+                <p>Open Chrome and enter <code class="code-inline">chrome://extensions</code> in your address bar (also works in Edge, Brave, Arc, and Opera).</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">4</div>
               <div class="step-content">
-                <h5>Click "Load unpacked"</h5>
-                <p>Click the <strong>Load unpacked</strong> button and select the extracted folder (which contains <code class="code-inline">manifest.json</code> at the root).</p>
+                <h5>Enable Developer Mode</h5>
+                <p>Turn <strong>ON</strong> the <strong>Developer mode</strong> toggle located in the top-right corner.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <h5>Load Unpacked Extension</h5>
+                <p>Click the <strong>Load unpacked</strong> button in the top-left toolbar, then select the extracted folder from Step 2.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">6</div>
+              <div class="step-content">
+                <h5>Pin &amp; Start Using</h5>
+                <p>Click the puzzle-piece icon in your browser toolbar and pin <strong>SafeHeader</strong> for 1-click access, or open it in the <strong>Side Panel</strong>.</p>
               </div>
             </div>
           </div>
@@ -168,28 +187,35 @@
             <div class="step-item">
               <div class="step-num">1</div>
               <div class="step-content">
-                <h5>Download and Unzip</h5>
-                <p>Download the latest Firefox zip release (<code class="code-inline">safeheader-*-firefox.zip</code>) and extract the archive to a local directory.</p>
+                <h5>Download the ZIP</h5>
+                <p>Click the <strong>Download Latest Firefox Package</strong> button above to save the zip file to your machine.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">2</div>
               <div class="step-content">
-                <h5>Open Firefox Debugging</h5>
-                <p>Open Firefox and navigate to <code class="code-inline">about:debugging#/runtime/this-firefox</code>.</p>
+                <h5>Extract the ZIP</h5>
+                <p>Extract / unzip the downloaded archive into a folder on your computer.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">3</div>
               <div class="step-content">
-                <h5>Load Temporary Add-on</h5>
-                <p>Click <strong>Load Temporary Add-on...</strong> and choose the <code class="code-inline">manifest.json</code> file inside the extracted directory.</p>
+                <h5>Open Firefox Debugging</h5>
+                <p>Open Firefox and navigate to <code class="code-inline">about:debugging#/runtime/this-firefox</code> in your address bar.</p>
               </div>
             </div>
             <div class="step-item">
               <div class="step-num">4</div>
               <div class="step-content">
-                <h5>Open Toolbar or Sidebar</h5>
+                <h5>Load Temporary Add-on</h5>
+                <p>Click the <strong>Load Temporary Add-on...</strong> button and choose the <code class="code-inline">manifest.json</code> file located inside the extracted directory.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <h5>Pin &amp; Use in Sidebar</h5>
                 <p>SafeHeader will appear in your toolbar and can be opened in the native Firefox Sidebar (<code class="code-inline">Cmd+B</code> / <code class="code-inline">Ctrl+B</code>).</p>
               </div>
             </div>
@@ -244,7 +270,7 @@
           <div class="usage-step-badge">Step 1</div>
           <h3 class="usage-step-title">Adding and Managing Rules</h3>
           <p class="usage-step-desc">
-            Click the <strong>+</strong> button in the top bar to add rules across 5 categories: <strong>Request Headers</strong> (add/set/remove outgoing headers), <strong>Response Headers</strong> (override CORS or cache headers), <strong>Add Cookies</strong> (inject cookies into outbound headers without browser cookie jar pollution), <strong>Query Parameters</strong>, and <strong>Redirects / Blocks</strong>.
+            Click the <strong>+</strong> button in the top bar to add rules across 5 categories: <strong>Request Headers</strong>, <strong>Response Headers</strong>, <strong>Add Cookies</strong>, <strong>Query Parameters</strong>, and <strong>Redirects / Blocks</strong>. Click the lightning bolt icon (<strong>⚡</strong>) next to any value input to activate <strong>RAM-Only Session Mode</strong>, isolating temporary production secrets strictly to memory so they never touch your disk.
           </p>
         </div>
         <div class="screenshot-frame">
@@ -284,7 +310,7 @@
           <div class="usage-step-badge">Step 3</div>
           <h3 class="usage-step-title">Corporate Security Controls &amp; Scope Guard</h3>
           <p class="usage-step-desc">
-            Click the shield icon in the top toolbar to access the <strong>Corporate Security Controls</strong> panel. SafeHeader provides enterprise safety out of the box: <strong>Strict Scope Guard (Anti-Leakage)</strong> blocks sensitive auth tokens on wildcards, <strong>Mask Secret Values</strong> hides keys to prevent over-the-shoulder leaks, <strong>Presentation Mode</strong> protects during screen shares, and <strong>Wipe All Local Data</strong> instantly purges local storage.
+            Click the shield icon in the top toolbar to access the <strong>Corporate Security Controls</strong> panel. SafeHeader provides enterprise safety out of the box: <strong>Strict Scope Guard (Anti-Leakage)</strong> blocks sensitive auth tokens on wildcards, <strong>RAM-Only Ephemeral Secrets (⚡)</strong> guarantees sensitive tokens are stored only in volatile memory and purged when the browser closes, <strong>Mask Secret Values</strong> hides keys to prevent over-the-shoulder leaks, <strong>Presentation Mode</strong> protects during screen shares, and <strong>Wipe All Local Data</strong> instantly purges local storage.
           </p>
         </div>
         <div class="screenshot-frame">
@@ -328,11 +354,12 @@
 
         <div class="recipes-grid">
           <div class="recipe-card">
-            <h4>1. Bearer Token Auth</h4>
-            <p>Inject an Authorization token into API calls to staging.</p>
+            <h4>1. Bearer Token Auth (RAM-Only)</h4>
+            <p>Inject an ephemeral token into staging API calls without writing to disk.</p>
             <div class="code-box"><pre>Rule: Request Header
 Name: Authorization
 Value: Bearer eyJhbGci...
+Mode: ⚡ RAM-Only (Ephemeral)
 Filter: *://api.staging.corp/*</pre></div>
           </div>
 

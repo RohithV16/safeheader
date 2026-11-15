@@ -3,7 +3,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-rohithv16.github.io%2Fsafeheader-10b981?style=flat&logo=github)](https://rohithv16.github.io/safeheader/)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-10b981.svg)](LICENSE)
 
-A **100% local, zero-export, security-hardened** browser extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
+A **100% local, security-hardened** browser extension for modifying HTTP request headers, response headers, request cookies, query parameters, and redirects/blocks — built for corporate and local development workflows.
 
 📖 **Official Documentation & Live Guide:** [https://rohithv16.github.io/safeheader/](https://rohithv16.github.io/safeheader/)
 
@@ -30,12 +30,14 @@ A **100% local, zero-export, security-hardened** browser extension for modifying
 > 💡 **Visual Installation Guide & Downloads:** See the step-by-step walkthrough at [rohithv16.github.io/safeheader/#installation](https://rohithv16.github.io/safeheader/#installation).
 
 ### Option 1: Install from GitHub Releases (Recommended for End Users)
-1. Go to the repository's **Releases** page on GitHub and download `safeheader-v<version>.zip`.
-2. Unzip the downloaded `.zip` into a folder on your computer.
-3. Open `chrome://extensions` in Chrome.
-4. Turn on **Developer mode** (top-right toggle).
-5. Click **Load unpacked** and select the unzipped folder (it contains `manifest.json` at the root).
-6. Pin **SafeHeader** from the Chrome puzzle-piece Extensions menu for quick access, or open it in the **Side Panel**.
+1. **Download the ZIP:** Go to the repository's [Releases](https://github.com/RohithV16/safeheader/releases/latest) page (or click the download button on the [Documentation site](https://rohithv16.github.io/safeheader/#installation)) and download the latest `.zip` package (`safeheader-*-chrome.zip` or `safeheader-*-firefox.zip`).
+2. **Extract the ZIP:** Extract / unzip the downloaded `.zip` file into a folder on your computer. Inside the extracted directory you will find `manifest.json` at the root.
+3. **Open Extensions Manager:** Open your browser and navigate to `chrome://extensions` (Chrome, Edge, Brave, Arc, Opera) or `about:debugging#/runtime/this-firefox` (Firefox).
+4. **Enable Developer Mode:** In Chromium browsers, toggle **Developer mode** ON in the top-right corner.
+5. **Load the Extension:**
+   - **Chrome / Chromium:** Click **Load unpacked** (top-left) and select the extracted folder from Step 2.
+   - **Firefox:** Click **Load Temporary Add-on...** and select the `manifest.json` file inside the extracted folder.
+6. **Pin & Launch:** Pin **SafeHeader** from your browser's extensions menu (puzzle-piece icon) for quick toolbar access, or open it in the **Side Panel** / **Sidebar**.
 
 ### Option 2: Build Locally from Source
 1. Build the extension (`npm install && npm run build`) so `dist/` is generated.
@@ -105,6 +107,7 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 - **100% Local Storage & Zero Export:** Profiles and rules stay in `chrome.storage.local`. Profile export, `.json` download, and bulk clipboard export are intentionally disabled. (Local **Import JSON** is supported for migrating existing ModHeader profiles.)
 - **Zero Outbound Network Access:** Strict MV3 CSP (`connect-src 'none'`) ensures extension pages cannot make network requests or send telemetry.
 - **Strict Scope Guard (On by Default):** Sensitive headers (`Authorization`, `Cookie`, `Set-Cookie`, `*token*`, `*secret*`, `*key*`, `*auth*`), all **Add cookies** rules, and sensitive query parameters are blocked from running globally (`*` or `*://*/*`). Add a domain URL filter to activate them.
+- **RAM-Only Session Secrets (⚡ Ephemeral Mode):** Click the lightning bolt icon next to any sensitive header or cookie value to keep it strictly in volatile browser memory (`chrome.storage.session`). The secret is stripped before writing to disk and automatically wiped when the browser closes.
 - **Secret Masking:** Sensitive header values and all cookie values are masked (`••••••`) in the UI with a per-row eye toggle to reveal when needed.
 - **Local Audit Log & One-Click Wipe:** View metadata-only rule/security events or wipe all local storage and active DNR rules from the **Security Controls** shield icon.
 

@@ -13,6 +13,8 @@ export interface SecuritySettings {
   maskSecrets: boolean;
   /** Force-mask all values and block reveal during screen sharing. */
   presentationMode: boolean;
+  /** Allow storing sensitive credentials in RAM only (cleared when browser closes). */
+  enableEphemeralSecrets?: boolean;
 }
 
 export interface HeaderRule {
