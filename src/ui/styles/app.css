@@ -524,6 +524,7 @@ body:has(.surface-popup) {
 .rule-checkbox {
   width: 15px;
   height: 15px;
+  margin: 0;
   accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
@@ -622,8 +623,8 @@ body:has(.surface-popup) {
 
 /* Drag Handle and Reordering */
 .drag-handle {
-  width: 14px;
-  height: 24px;
+  width: 10px;
+  height: 20px;
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -638,7 +639,8 @@ body:has(.surface-popup) {
   justify-content: center;
   flex-shrink: 0;
   padding: 0;
-  margin-right: 2px;
+  margin-left: -2px;
+  margin-right: -4px;
   transition: opacity 0.12s ease, color 0.12s ease;
 }
 
