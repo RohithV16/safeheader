@@ -43,6 +43,7 @@ export function createDefaultSecuritySettings(): SecuritySettings {
     requireScopeForSensitive: false,
     maskSecrets: true,
     presentationMode: false,
+    enableEphemeralSecrets: false,
   };
 }
 
@@ -267,6 +268,7 @@ function sanitizeSecuritySettings(raw: unknown): SecuritySettings {
     maskSecrets:
       typeof s.maskSecrets === 'boolean' ? s.maskSecrets : defaults.maskSecrets,
     presentationMode: Boolean(s.presentationMode),
+    enableEphemeralSecrets: Boolean(s.enableEphemeralSecrets),
   };
 }
 

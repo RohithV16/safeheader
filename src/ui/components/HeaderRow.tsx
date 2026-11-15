@@ -14,6 +14,7 @@ interface HeaderRowProps {
   readonly presentationMode: boolean;
   readonly isScoped: boolean;
   readonly requireScopeForSensitive: boolean;
+  readonly enableEphemeralSecrets?: boolean;
   readonly readOnly?: boolean;
   readonly datalistId: string;
   readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
@@ -30,6 +31,7 @@ export function HeaderRow({
   presentationMode,
   isScoped,
   requireScopeForSensitive,
+  enableEphemeralSecrets = false,
   readOnly = false,
   datalistId,
   onMoveRule,
@@ -132,7 +134,7 @@ export function HeaderRow({
           </button>
         )}
 
-        {!readOnly && rule.operation !== 'remove' && (
+        {!readOnly && rule.operation !== 'remove' && enableEphemeralSecrets && (
           <button
             type="button"
             className={`row-del-btn ${rule.ephemeral ? 'ephemeral-active' : ''}`}

@@ -74,6 +74,7 @@ export function clampSecurityWithPolicy(
       : security.requireScopeForSensitive,
     maskSecrets: policy.enforceMaskSecrets ? true : security.maskSecrets,
     presentationMode: security.presentationMode,
+    enableEphemeralSecrets: Boolean(security.enableEphemeralSecrets),
   };
 }
 

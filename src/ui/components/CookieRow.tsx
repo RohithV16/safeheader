@@ -13,6 +13,7 @@ interface CookieRowProps {
   readonly presentationMode: boolean;
   readonly isScoped: boolean;
   readonly requireScopeForSensitive: boolean;
+  readonly enableEphemeralSecrets?: boolean;
   readonly readOnly?: boolean;
   readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
   readonly onChange: (next: CookieRule) => void;
@@ -27,6 +28,7 @@ export function CookieRow({
   presentationMode,
   isScoped,
   requireScopeForSensitive,
+  enableEphemeralSecrets = false,
   readOnly = false,
   onMoveRule,
   onChange,
@@ -124,7 +126,7 @@ export function CookieRow({
           </button>
         )}
 
-        {!readOnly && (
+        {!readOnly && enableEphemeralSecrets && (
           <button
             type="button"
             className={`row-del-btn ${rule.ephemeral ? 'ephemeral-active' : ''}`}

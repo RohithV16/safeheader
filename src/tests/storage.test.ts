@@ -172,4 +172,17 @@ describe('storage normalization, backup ring & recovery', () => {
     const afterRestart = await loadStateWithRecovery();
     expect(afterRestart.state.profiles[0].requestHeaders[0].value).toBe('');
   });
+
+  it('defaults enableEphemeralSecrets to false and sanitizes user toggle', () => {
+    const raw = {
+      security: {
+        enableEphemeralSecrets: true,
+      },
+    };
+    const normalized = normalizeState(raw);
+    expect(normalized.security.enableEphemeralSecrets).toBe(true);
+
+    const defaultState = normalizeState({});
+    expect(defaultState.security.enableEphemeralSecrets).toBe(false);
+  });
 });

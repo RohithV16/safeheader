@@ -13,6 +13,7 @@ interface QueryParamRowProps {
   readonly presentationMode: boolean;
   readonly isScoped: boolean;
   readonly requireScopeForSensitive: boolean;
+  readonly enableEphemeralSecrets?: boolean;
   readonly readOnly?: boolean;
   readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
   readonly onChange: (next: QueryParamRule) => void;
@@ -53,6 +54,7 @@ export function QueryParamRow({
   presentationMode,
   isScoped,
   requireScopeForSensitive,
+  enableEphemeralSecrets = false,
   readOnly = false,
   onMoveRule,
   onChange,
@@ -165,7 +167,7 @@ export function QueryParamRow({
           </button>
         )}
 
-        {!readOnly && !isRemove && (
+        {!readOnly && !isRemove && enableEphemeralSecrets && (
           <button
             type="button"
             className={`row-del-btn ${rule.ephemeral ? 'ephemeral-active' : ''}`}

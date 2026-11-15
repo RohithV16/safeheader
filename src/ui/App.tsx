@@ -550,6 +550,7 @@ export function App({ surface }: AppProps) {
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   datalistId="req-header-suggestions"
                   onMoveRule={(from, to) =>
@@ -593,6 +594,7 @@ export function App({ surface }: AppProps) {
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   datalistId="resp-header-suggestions"
                   onMoveRule={(from, to) =>
@@ -637,6 +639,7 @@ export function App({ surface }: AppProps) {
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   onMoveRule={(from, to) =>
                     updateActiveProfile((p) => moveRuleInProfile(p, 'cookies', from, to))
@@ -676,6 +679,7 @@ export function App({ surface }: AppProps) {
                   presentationMode={state.security.presentationMode}
                   isScoped={isScoped}
                   requireScopeForSensitive={state.security.requireScopeForSensitive}
+                  enableEphemeralSecrets={state.security.enableEphemeralSecrets}
                   readOnly={readOnly}
                   onMoveRule={(from, to) =>
                     updateActiveProfile((p) => moveRuleInProfile(p, 'queryParams', from, to))

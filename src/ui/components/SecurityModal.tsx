@@ -240,6 +240,27 @@ export function SecurityModal({
               </div>
             </label>
 
+            <label className="security-option">
+              <input
+                type="checkbox"
+                className="rule-checkbox"
+                aria-label="Enable RAM-Only Session Values"
+                checked={Boolean(security.enableEphemeralSecrets)}
+                onChange={(e) =>
+                  onChange({ ...security, enableEphemeralSecrets: e.target.checked })
+                }
+              />
+              <div>
+                <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Zap size={12} /> RAM-Only Session Secrets (Ephemeral Mode)
+                </div>
+                <div className="security-desc">
+                  Enables the ⚡ lightning toggle on rules to store sensitive credentials in browser RAM
+                  only (cleared automatically on browser close, never written to disk).
+                </div>
+              </div>
+            </label>
+
             {syncHealth && (
               <div className="sync-health-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
