@@ -107,6 +107,7 @@ SafeHeader is designed so credentials and internal headers never leak across unr
 - **100% Local Storage & Zero Export:** Profiles and rules stay in `chrome.storage.local`. Profile export, `.json` download, and bulk clipboard export are intentionally disabled. (Local **Import JSON** is supported for migrating existing ModHeader profiles.)
 - **Zero Outbound Network Access:** Strict MV3 CSP (`connect-src 'none'`) ensures extension pages cannot make network requests or send telemetry.
 - **Strict Scope Guard (On by Default):** Sensitive headers (`Authorization`, `Cookie`, `Set-Cookie`, `*token*`, `*secret*`, `*key*`, `*auth*`), all **Add cookies** rules, and sensitive query parameters are blocked from running globally (`*` or `*://*/*`). Add a domain URL filter to activate them.
+- **RAM-Only Session Secrets (⚡ Ephemeral Mode):** Click the lightning bolt icon next to any sensitive header or cookie value to keep it strictly in volatile browser memory (`chrome.storage.session`). The secret is stripped before writing to disk and automatically wiped when the browser closes.
 - **Secret Masking:** Sensitive header values and all cookie values are masked (`••••••`) in the UI with a per-row eye toggle to reveal when needed.
 - **Local Audit Log & One-Click Wipe:** View metadata-only rule/security events or wipe all local storage and active DNR rules from the **Security Controls** shield icon.
 

@@ -51,6 +51,7 @@
         <span class="badge badge-emerald">✓ 100% Local Storage</span>
         <span class="badge">✓ Zero Telemetry</span>
         <span class="badge">✓ Strict Scope Guard</span>
+        <span class="badge">✓ RAM-Only Session Secrets (⚡)</span>
         <span class="badge">✓ Chrome 113+ &amp; Firefox 115+</span>
       </div>
 
@@ -75,6 +76,10 @@
         <div class="overview-card">
           <h4>100% Local Storage</h4>
           <p>Profiles and rules stay strictly in browser local storage. Zero network telemetry protects credentials from exfiltration.</p>
+        </div>
+        <div class="overview-card">
+          <h4>RAM-Only Session Secrets (⚡)</h4>
+          <p>Toggle ephemeral mode on any rule to store tokens exclusively in volatile memory. Secrets never touch disk and auto-purge when the browser closes.</p>
         </div>
         <div class="overview-card">
           <h4>Strict Scope Guard</h4>
@@ -265,7 +270,7 @@
           <div class="usage-step-badge">Step 1</div>
           <h3 class="usage-step-title">Adding and Managing Rules</h3>
           <p class="usage-step-desc">
-            Click the <strong>+</strong> button in the top bar to add rules across 5 categories: <strong>Request Headers</strong> (add/set/remove outgoing headers), <strong>Response Headers</strong> (override CORS or cache headers), <strong>Add Cookies</strong> (inject cookies into outbound headers without browser cookie jar pollution), <strong>Query Parameters</strong>, and <strong>Redirects / Blocks</strong>.
+            Click the <strong>+</strong> button in the top bar to add rules across 5 categories: <strong>Request Headers</strong>, <strong>Response Headers</strong>, <strong>Add Cookies</strong>, <strong>Query Parameters</strong>, and <strong>Redirects / Blocks</strong>. Click the lightning bolt icon (<strong>⚡</strong>) next to any value input to activate <strong>RAM-Only Session Mode</strong>, isolating temporary production secrets strictly to memory so they never touch your disk.
           </p>
         </div>
         <div class="screenshot-frame">
@@ -305,7 +310,7 @@
           <div class="usage-step-badge">Step 3</div>
           <h3 class="usage-step-title">Corporate Security Controls &amp; Scope Guard</h3>
           <p class="usage-step-desc">
-            Click the shield icon in the top toolbar to access the <strong>Corporate Security Controls</strong> panel. SafeHeader provides enterprise safety out of the box: <strong>Strict Scope Guard (Anti-Leakage)</strong> blocks sensitive auth tokens on wildcards, <strong>Mask Secret Values</strong> hides keys to prevent over-the-shoulder leaks, <strong>Presentation Mode</strong> protects during screen shares, and <strong>Wipe All Local Data</strong> instantly purges local storage.
+            Click the shield icon in the top toolbar to access the <strong>Corporate Security Controls</strong> panel. SafeHeader provides enterprise safety out of the box: <strong>Strict Scope Guard (Anti-Leakage)</strong> blocks sensitive auth tokens on wildcards, <strong>RAM-Only Ephemeral Secrets (⚡)</strong> guarantees sensitive tokens are stored only in volatile memory and purged when the browser closes, <strong>Mask Secret Values</strong> hides keys to prevent over-the-shoulder leaks, <strong>Presentation Mode</strong> protects during screen shares, and <strong>Wipe All Local Data</strong> instantly purges local storage.
           </p>
         </div>
         <div class="screenshot-frame">
@@ -349,11 +354,12 @@
 
         <div class="recipes-grid">
           <div class="recipe-card">
-            <h4>1. Bearer Token Auth</h4>
-            <p>Inject an Authorization token into API calls to staging.</p>
+            <h4>1. Bearer Token Auth (RAM-Only)</h4>
+            <p>Inject an ephemeral token into staging API calls without writing to disk.</p>
             <div class="code-box"><pre>Rule: Request Header
 Name: Authorization
 Value: Bearer eyJhbGci...
+Mode: ⚡ RAM-Only (Ephemeral)
 Filter: *://api.staging.corp/*</pre></div>
           </div>
 
