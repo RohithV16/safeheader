@@ -30,12 +30,14 @@ A **100% local, security-hardened** browser extension for modifying HTTP request
 > 💡 **Visual Installation Guide & Downloads:** See the step-by-step walkthrough at [rohithv16.github.io/safeheader/#installation](https://rohithv16.github.io/safeheader/#installation).
 
 ### Option 1: Install from GitHub Releases (Recommended for End Users)
-1. Go to the repository's **Releases** page on GitHub and download `safeheader-v<version>.zip`.
-2. Unzip the downloaded `.zip` into a folder on your computer.
-3. Open `chrome://extensions` in Chrome.
-4. Turn on **Developer mode** (top-right toggle).
-5. Click **Load unpacked** and select the unzipped folder (it contains `manifest.json` at the root).
-6. Pin **SafeHeader** from the Chrome puzzle-piece Extensions menu for quick access, or open it in the **Side Panel**.
+1. **Download the ZIP:** Go to the repository's [Releases](https://github.com/RohithV16/safeheader/releases/latest) page (or click the download button on the [Documentation site](https://rohithv16.github.io/safeheader/#installation)) and download the latest `.zip` package (`safeheader-*-chrome.zip` or `safeheader-*-firefox.zip`).
+2. **Extract the ZIP:** Extract / unzip the downloaded `.zip` file into a folder on your computer. Inside the extracted directory you will find `manifest.json` at the root.
+3. **Open Extensions Manager:** Open your browser and navigate to `chrome://extensions` (Chrome, Edge, Brave, Arc, Opera) or `about:debugging#/runtime/this-firefox` (Firefox).
+4. **Enable Developer Mode:** In Chromium browsers, toggle **Developer mode** ON in the top-right corner.
+5. **Load the Extension:**
+   - **Chrome / Chromium:** Click **Load unpacked** (top-left) and select the extracted folder from Step 2.
+   - **Firefox:** Click **Load Temporary Add-on...** and select the `manifest.json` file inside the extracted folder.
+6. **Pin & Launch:** Pin **SafeHeader** from your browser's extensions menu (puzzle-piece icon) for quick toolbar access, or open it in the **Side Panel** / **Sidebar**.
 
 ### Option 2: Build Locally from Source
 1. Build the extension (`npm install && npm run build`) so `dist/` is generated.
