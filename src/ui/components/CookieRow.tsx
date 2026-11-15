@@ -2,40 +2,52 @@ import { AlertTriangle, Eye, EyeOff, ShieldAlert, Zap } from 'lucide-react';
 import type { CookieRule } from '../../shared/types';
 import { getCookieRuleWarning } from '../../shared/validators';
 import { useAutoHideReveal } from '../hooks/useAutoHideReveal';
+import { useRowDragAndDrop } from '../hooks/useRowDragAndDrop';
 import { RowActions } from './RowActions';
 
 interface CookieRowProps {
   readonly rule: CookieRule;
+  readonly index: number;
   readonly hideComment: boolean;
   readonly maskSecrets: boolean;
   readonly presentationMode: boolean;
   readonly isScoped: boolean;
   readonly requireScopeForSensitive: boolean;
   readonly readOnly?: boolean;
-  readonly onMoveUp?: () => void;
-  readonly onMoveDown?: () => void;
-  readonly canMoveUp?: boolean;
-  readonly canMoveDown?: boolean;
+  readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
   readonly onChange: (next: CookieRule) => void;
   readonly onDelete: () => void;
 }
 
 export function CookieRow({
   rule,
+  index,
   hideComment,
   maskSecrets,
   presentationMode,
   isScoped,
   requireScopeForSensitive,
   readOnly = false,
-  onMoveUp,
-  onMoveDown,
-  canMoveUp,
-  canMoveDown,
+  onMoveRule,
   onChange,
   onDelete,
 }: CookieRowProps) {
   const [revealed, setRevealed] = useAutoHideReveal(presentationMode);
+  const {
+    isDragOver,
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+  } = useRowDragAndDrop({
+    index,
+    type: 'cookie',
+    disabled: readOnly,
+    onMoveRule,
+  });
 
   const warning = getCookieRuleWarning(rule);
   const masked = maskSecrets || presentationMode;
@@ -46,8 +58,30 @@ export function CookieRow({
     !isScoped;
 
   return (
-    <div className={`rule-row-wrap ${isBlockedByGuard ? 'row-blocked' : ''}`}>
+    <div
+      className={`rule-row-wrap ${isBlockedByGuard ? 'row-blocked' : ''} ${
+        isDragOver ? 'drag-over' : ''
+      } ${isDragging ? 'is-dragging' : ''}`}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className={`rule-row ${!rule.enabled ? 'dimmed' : ''}`}>
+        {!readOnly && (
+          <button
+            type="button"
+            className="drag-handle"
+            draggable
+            title="Drag to reorder"
+            aria-label="Drag to reorder"
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            &#8942;
+          </button>
+        )}
+
         <input
           type="checkbox"
           className="rule-checkbox"
@@ -124,10 +158,6 @@ export function CookieRow({
 
         {!readOnly && (
           <RowActions
-            onMoveUp={onMoveUp}
-            onMoveDown={onMoveDown}
-            canMoveUp={canMoveUp}
-            canMoveDown={canMoveDown}
             onDelete={onDelete}
             deleteTitle="Delete cookie rule"
             deleteAriaLabel="Delete cookie rule"

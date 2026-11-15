@@ -2,20 +2,19 @@ import { AlertTriangle, Eye, EyeOff, ShieldAlert, Zap } from 'lucide-react';
 import type { QueryParamRule } from '../../shared/types';
 import { getQueryParamWarning, isSensitiveHeaderName } from '../../shared/validators';
 import { useAutoHideReveal } from '../hooks/useAutoHideReveal';
+import { useRowDragAndDrop } from '../hooks/useRowDragAndDrop';
 import { RowActions } from './RowActions';
 
 interface QueryParamRowProps {
   readonly rule: QueryParamRule;
+  readonly index: number;
   readonly hideComment: boolean;
   readonly maskSecrets: boolean;
   readonly presentationMode: boolean;
   readonly isScoped: boolean;
   readonly requireScopeForSensitive: boolean;
   readonly readOnly?: boolean;
-  readonly onMoveUp?: () => void;
-  readonly onMoveDown?: () => void;
-  readonly canMoveUp?: boolean;
-  readonly canMoveDown?: boolean;
+  readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
   readonly onChange: (next: QueryParamRule) => void;
   readonly onDelete: () => void;
 }
@@ -48,20 +47,33 @@ function checkBlockedByGuard(
 
 export function QueryParamRow({
   rule,
+  index,
   hideComment,
   maskSecrets,
   presentationMode,
   isScoped,
   requireScopeForSensitive,
   readOnly = false,
-  onMoveUp,
-  onMoveDown,
-  canMoveUp,
-  canMoveDown,
+  onMoveRule,
   onChange,
   onDelete,
 }: QueryParamRowProps) {
   const [revealed, setRevealed] = useAutoHideReveal(presentationMode);
+  const {
+    isDragOver,
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+  } = useRowDragAndDrop({
+    index,
+    type: 'query-param',
+    disabled: readOnly,
+    onMoveRule,
+  });
 
   const warning = getQueryParamWarning(rule);
   const sensitive = isSensitiveHeaderName(rule.name);
@@ -77,8 +89,30 @@ export function QueryParamRow({
   const placeholder = resolveValuePlaceholder(isRemove, rule.ephemeral, rule.value);
 
   return (
-    <div className={`rule-row-wrap ${isBlockedByGuard ? 'row-blocked' : ''}`}>
+    <div
+      className={`rule-row-wrap ${isBlockedByGuard ? 'row-blocked' : ''} ${
+        isDragOver ? 'drag-over' : ''
+      } ${isDragging ? 'is-dragging' : ''}`}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className={`rule-row ${!rule.enabled ? 'dimmed' : ''}`}>
+        {!readOnly && (
+          <button
+            type="button"
+            className="drag-handle"
+            draggable
+            title="Drag to reorder"
+            aria-label="Drag to reorder"
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            &#8942;
+          </button>
+        )}
+
         <input
           type="checkbox"
           className="rule-checkbox"
@@ -165,10 +199,6 @@ export function QueryParamRow({
 
         {!readOnly && (
           <RowActions
-            onMoveUp={onMoveUp}
-            onMoveDown={onMoveDown}
-            canMoveUp={canMoveUp}
-            canMoveDown={canMoveDown}
             onDelete={onDelete}
             deleteTitle="Delete query parameter rule"
             deleteAriaLabel="Delete query parameter rule"

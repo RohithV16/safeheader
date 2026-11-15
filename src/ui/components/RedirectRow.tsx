@@ -1,35 +1,48 @@
 import { AlertTriangle, ArrowRight, ShieldAlert } from 'lucide-react';
 import type { RedirectRule } from '../../shared/types';
 import { getRedirectRuleWarning, isOverlyBroadUrlPattern } from '../../shared/validators';
+import { useRowDragAndDrop } from '../hooks/useRowDragAndDrop';
 import { RowActions } from './RowActions';
 
 interface RedirectRowProps {
   readonly rule: RedirectRule;
+  readonly index: number;
   readonly hideComment: boolean;
   readonly requireScopeForSensitive: boolean;
   readonly readOnly?: boolean;
   readonly currentTabOriginPattern: string | null;
-  readonly onMoveUp?: () => void;
-  readonly onMoveDown?: () => void;
-  readonly canMoveUp?: boolean;
-  readonly canMoveDown?: boolean;
+  readonly onMoveRule?: (fromIndex: number, toIndex: number) => void;
   readonly onChange: (next: RedirectRule) => void;
   readonly onDelete: () => void;
 }
 
 export function RedirectRow({
   rule,
+  index,
   hideComment,
   requireScopeForSensitive,
   readOnly = false,
   currentTabOriginPattern,
-  onMoveUp,
-  onMoveDown,
-  canMoveUp,
-  canMoveDown,
+  onMoveRule,
   onChange,
   onDelete,
 }: RedirectRowProps) {
+  const {
+    isDragOver,
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+  } = useRowDragAndDrop({
+    index,
+    type: 'redirect',
+    disabled: readOnly,
+    onMoveRule,
+  });
+
   const normalizedRule: RedirectRule = {
     ...rule,
     mode: 'url',
@@ -45,8 +58,30 @@ export function RedirectRow({
     isOverlyBroadUrlPattern(normalizedRule.fromPattern, 'wildcard');
 
   return (
-    <div className={`rule-row-wrap ${isBroadBlocked ? 'row-blocked' : ''}`}>
+    <div
+      className={`rule-row-wrap ${isBroadBlocked ? 'row-blocked' : ''} ${
+        isDragOver ? 'drag-over' : ''
+      } ${isDragging ? 'is-dragging' : ''}`}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className={`rule-row ${!normalizedRule.enabled ? 'dimmed' : ''}`}>
+        {!readOnly && (
+          <button
+            type="button"
+            className="drag-handle"
+            draggable
+            title="Drag to reorder"
+            aria-label="Drag to reorder"
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            &#8942;
+          </button>
+        )}
+
         <input
           type="checkbox"
           className="rule-checkbox"
@@ -95,10 +130,6 @@ export function RedirectRow({
 
         {!readOnly && (
           <RowActions
-            onMoveUp={onMoveUp}
-            onMoveDown={onMoveDown}
-            canMoveUp={canMoveUp}
-            canMoveDown={canMoveDown}
             onDelete={onDelete}
             deleteTitle="Delete redirect rule"
             deleteAriaLabel="Delete redirect rule"

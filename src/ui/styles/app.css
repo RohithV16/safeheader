@@ -620,6 +620,58 @@ body:has(.surface-popup) {
   cursor: not-allowed;
 }
 
+/* Drag Handle and Reordering */
+.drag-handle {
+  width: 14px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+  opacity: 0.4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 2px;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  color: var(--text-primary);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.rule-row-wrap.drag-over {
+  position: relative;
+}
+
+.rule-row-wrap.drag-over::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent);
+  border-radius: 1px;
+  box-shadow: 0 0 4px var(--accent);
+  z-index: 10;
+}
+
+.rule-row-wrap.is-dragging {
+  opacity: 0.35;
+}
+
 .row-del-btn {
   width: 24px;
   height: 24px;
