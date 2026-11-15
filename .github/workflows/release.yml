@@ -49,15 +49,19 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           node -e '
             const fs = require("node:fs");
-            const path = "public/manifest.json";
-            const manifest = JSON.parse(fs.readFileSync(path, "utf8"));
-            manifest.version = process.argv[1];
-            fs.writeFileSync(path, JSON.stringify(manifest, null, 2) + "\n");
+            const files = ["public/manifest.json", "public/manifest.firefox.json"];
+            for (const path of files) {
+              if (fs.existsSync(path)) {
+                const manifest = JSON.parse(fs.readFileSync(path, "utf8"));
+                manifest.version = process.argv[1];
+                fs.writeFileSync(path, JSON.stringify(manifest, null, 2) + "\n");
+              }
+            }
           ' "${NEW_VERSION}"
           echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Build and package Chrome extension
+      - name: Build and package extension
         run: npm run package
 
       - name: Commit version bump and push tag
@@ -65,10 +69,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json public/manifest.json
+          git add package.json package-lock.json public/manifest.json public/manifest.firefox.json
           git commit -m "chore: release ${{ steps.bump.outputs.tag }} [skip ci]"
-          git tag "${{ steps.bump.outputs.tag }}"
-          git push origin "HEAD:${{ github.ref_name }}" "${{ steps.bump.outputs.tag }}"
+          git tag -f "${{ steps.bump.outputs.tag }}"
+          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin "refs/tags/${{ steps.bump.outputs.tag }}" --force
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -80,7 +85,12 @@ jobs:
             release/safeheader-v*.zip
             release/SHA256SUMS.txt
           body: |
-            ## Install in Chrome
-            1. Download `safeheader-v${{ steps.bump.outputs.version }}.zip` from the **Assets** below and unzip it into a folder.
-            2. Open `chrome://extensions` in Chrome and enable **Developer mode** (top right).
-            3. Click **Load unpacked** and select the unzipped folder (it contains `manifest.json` at the root).
+            ## Install in Google Chrome / Chromium
+            1. Download `safeheader-v${{ steps.bump.outputs.version }}-chrome.zip` from **Assets** below and unzip it.
+            2. Navigate to `chrome://extensions` in Chrome and enable **Developer mode** (top right toggle).
+            3. Click **Load unpacked** and select the unzipped directory.
+
+            ## Install in Mozilla Firefox
+            1. Download `safeheader-v${{ steps.bump.outputs.version }}-firefox.zip` from **Assets** below and unzip it.
+            2. Navigate to `about:debugging#/runtime/this-firefox` in Firefox.
+            3. Click **Load Temporary Add-on...** and select `manifest.json` inside the unzipped directory.

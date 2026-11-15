@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SafeHeader",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Local-only, security-hardened extension to modify HTTP request/response headers, cookies, query parameters, and redirects with zero data export.",
   "icons": {
     "16": "icons/icon16.png",
@@ -34,7 +34,9 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["service-worker.js"]
+    "scripts": [
+      "service-worker.js"
+    ]
   },
   "browser_specific_settings": {
     "gecko": {
